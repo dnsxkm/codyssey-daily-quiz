@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>과제2 데일리 퀴즈 — self vs 변수</title>
+<style>
+  :root{
+    --page-bg:#eceef5; --card:#ffffff; --ink:#1f2430; --sub:#5b6472;
+    --accent:#4f46e5; --accent-dark:#4338ca;
+    --code-bg:#1b1e2b; --code-ink:#e6e9f0; --code-cmt:#6b7488; --code-str:#9ece6a;
+    --ok:#16a34a; --ok-bg:rgba(22,163,74,.16);
+    --bad:#dc2626; --bad-bg:rgba(220,38,38,.16);
+    --blank-border:#5b6479; --blank-bg:rgba(148,163,184,.16);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--page-bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo",
+      "Noto Sans KR",Roboto,sans-serif;
+    padding:24px 14px;
+  }
+  .card{
+    max-width:720px; margin:0 auto; background:var(--card);
+    border-radius:18px; padding:26px 22px;
+    box-shadow:0 8px 30px rgba(20,25,45,.08);
+  }
+  .eyebrow{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.5px; font-weight:700; color:var(--accent); letter-spacing:.4px;
+  }
+  h1{font-size:22px; font-weight:800; margin:8px 0 6px; line-height:1.3;}
+  .intro{font-size:14.5px; line-height:1.7; color:var(--sub); margin:0 0 18px;}
+  .intro b{color:var(--ink);}
+
+  .code{
+    background:var(--code-bg); border-radius:12px; padding:16px 14px; overflow-x:auto;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:13px;
+  }
+  .ln{white-space:pre; line-height:26px; color:var(--code-ink);}
+  .cmt{color:var(--code-cmt); font-style:italic;}
+  .str{color:var(--code-str);}
+
+  .blank{
+    width:13ch; font-family:inherit; font-size:inherit; color:var(--code-ink);
+    background:var(--blank-bg); border:1.5px solid var(--blank-border);
+    border-radius:6px; padding:0 6px; margin:0 2px; text-align:center;
+  }
+  .blank::placeholder{color:#6b7488;}
+  .blank:focus{outline:none; border-color:#818cf8; box-shadow:0 0 0 2px rgba(129,140,248,.30);}
+  .blank.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .blank.bad{border-color:var(--bad); background:var(--bad-bg);}
+
+  .btns{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:18px;}
+  .btn{font-size:15px; border-radius:10px; cursor:pointer; padding:11px 20px;}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .btn.primary{background:var(--accent); color:#fff; border:none; font-weight:700;}
+  .btn.secondary{background:#eceef5; color:var(--ink); border:1px solid #d7dbe6; font-weight:600;}
+  .btn.link{background:transparent; color:var(--accent); border:none; font-weight:600;
+    padding:11px 6px; text-decoration:underline;}
+
+  .banner{margin-top:16px; padding:12px 16px; border-radius:10px; font-size:14.5px; font-weight:600;}
+  .banner.ok{background:#dcfce7; color:#166534;}
+  .banner.amber{background:#fef3c7; color:#b45309;}
+
+  .key{margin-top:20px;}
+  .concept{background:#f1f5ff; border:1px solid #dfe6fb; border-radius:12px; padding:16px;}
+  .concept-h{font-size:15px; font-weight:800; margin-bottom:8px;}
+  .concept-b{font-size:14.5px; line-height:1.75; color:var(--sub);}
+  .concept-b b{color:var(--ink);}
+  .concept-b b.lead{color:var(--accent);}
+  .bullet{margin-top:8px;}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--ink);}
+
+  .cards{margin-top:14px; display:flex; flex-direction:column; gap:10px;}
+  .qcard{background:#fbfbfd; border:1px solid #e7e9f0; border-radius:12px; padding:14px 16px;}
+  .qh{font-size:14.5px;}
+  .qh b{font-weight:800;}
+  .chip{background:#eef1f8; color:var(--accent-dark); padding:2px 7px; border-radius:6px; font-weight:700; font-size:13px;}
+  .where{color:var(--code-cmt); margin-left:8px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px;}
+  .qb{margin-top:8px; font-size:14px; line-height:1.7; color:var(--sub);}
+
+  .foot{margin-top:18px; font-size:12.5px; color:var(--code-cmt); text-align:center;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="eyebrow"># 과제2 · 데일리 퀴즈</div>
+    <h1>🧩 self.○○ vs 그냥 변수, 뭘 넣어야 할까?</h1>
+    <p class="intro">아래는 문제를 섞어서 내고 점수를 매기는 퀴즈 게임의 일부예요. 로직을 따라가며 4개의 빈칸을 채워보세요. 각 자리에 <b>객체에 저장된 값(self.○○)</b>을 써야 할지, <b>그냥 변수</b>를 써야 할지 판단하는 게 포인트입니다.</p>
+
+    <div class="code">
+<div class="ln">import random</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">class QuizGame:</div>
+<div class="ln">    def __init__(self, quizzes):</div>
+<div class="ln">        <span class="cmt"># 밖에서 받은 문제 목록을 객체 안에 저장한다</span></div>
+<div class="ln">        self.quizzes = <input class="blank" data-answer="quizzes" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸 1"></div>
+<div class="ln">        self.score = 0</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">    def run(self):</div>
+<div class="ln">        <span class="cmt"># 원본 순서는 지키고, 섞을 복사본을 따로 만든다</span></div>
+<div class="ln">        order = <input class="blank" data-answer="self.quizzes" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸 2">[:]</div>
+<div class="ln">        random.shuffle(<input class="blank" data-answer="order" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸 3">)</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">        for quiz in order:</div>
+<div class="ln">            user_answer = input(quiz[<span class="str">"question"</span>] + <span class="str">" &gt; "</span>)</div>
+<div class="ln">            if user_answer == quiz[<span class="str">"answer"</span>]:</div>
+<div class="ln">                <input class="blank" data-answer="self.score" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸 4"> += 1</div>
+<div class="ln">                print(<span class="str">"정답!"</span>)</div>
+<div class="ln">            else:</div>
+<div class="ln">                print(<span class="str">"오답!"</span>)</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">        print(<span class="str">f"점수: {self.score} / {len(order)}"</span>)</div>
+    </div>
+
+    <div class="btns">
+      <button id="grade" class="btn primary">채점하기</button>
+      <button id="reset" class="btn secondary">다시 풀기</button>
+      <button id="toggle" class="btn link">정답·해설 보기</button>
+    </div>
+
+    <div id="banner" class="banner" hidden></div>
+
+    <div id="key" class="key" hidden>
+      <div class="concept">
+        <div class="concept-h">💡 핵심 개념</div>
+        <div class="concept-b">
+          한 줄 요약: <b class="lead">이 값이 함수가 끝난 뒤에도 필요하면 <code>self.</code>, 아니면 그냥 변수.</b>
+          <div class="bullet">• <code>self.quizzes</code>, <code>self.score</code> → 객체가 계속 들고 다니는 <b>상태</b>. 다른 메서드에서도, 함수가 끝난 뒤에도 살아있어요.</div>
+          <div class="bullet">• <code>quizzes</code>(매개변수), <code>order</code>(복사본) → 그 함수 안에서만 잠깐 살다 사라지는 <b>지역 변수</b>.</div>
+        </div>
+      </div>
+      <div class="cards">
+        <div class="qcard">
+          <div class="qh"><b>1. 정답: </b><code class="chip">quizzes</code><span class="where">self.quizzes = ____</span></div>
+          <div class="qb">오른쪽 quizzes는 __init__(self, quizzes)로 밖에서 받은 값이에요. 그냥 변수(매개변수)죠. 왼쪽 self.quizzes는 그 값을 객체에 저장하는 자리입니다. 오른쪽에도 self.quizzes를 쓰면 아직 만들어지지도 않은 값을 참조하게 돼서 에러가 나요. '받은 재료(quizzes)를 객체 주머니(self.quizzes)에 담는다'로 기억하면 쉬워요.</div>
+        </div>
+        <div class="qcard">
+          <div class="qh"><b>2. 정답: </b><code class="chip">self.quizzes</code><span class="where">order = ____[:]</span></div>
+          <div class="qb">run() 안에는 quizzes라는 지역 변수가 없어요. 문제 목록은 객체에 저장돼 있으니 self.quizzes로 꺼내야 합니다. 그냥 quizzes라고 쓰면 NameError가 나요. 뒤의 [:]는 원본을 건드리지 않으려고 복사본을 뜨는 부분입니다.</div>
+        </div>
+        <div class="qcard">
+          <div class="qh"><b>3. 정답: </b><code class="chip">order</code><span class="where">random.shuffle(____)</span></div>
+          <div class="qb">섞을 대상은 방금 만든 복사본 order예요. 여기에 self.quizzes를 넣으면 원본이 통째로 섞여버려서 복사한 의미가 사라집니다. shuffle은 받은 리스트를 그 자리에서 직접 섞는(in-place) 함수라, 더더욱 원본을 넣으면 안 돼요.</div>
+        </div>
+        <div class="qcard">
+          <div class="qh"><b>4. 정답: </b><code class="chip">self.score</code><span class="where">____ += 1</span></div>
+          <div class="qb">점수는 문제를 푸는 내내 계속 쌓여야 하는 값이에요. 즉 객체가 들고 다니는 상태 → self.score. 그냥 score라고 쓰면 그런 지역 변수가 없어서 NameError가 납니다.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">정답은 대소문자·공백에 관계없이 채점돼요.</div>
+  </div>
+
+<script>
+  var blanks = Array.prototype.slice.call(document.querySelectorAll('.blank'));
+  var graded = false;
+  function norm(s){ return (s || '').replace(/\s+/g, '').toLowerCase(); }
+
+  function paint(){
+    if(!graded) return;
+    blanks.forEach(function(inp){
+      var ok = norm(inp.value) === norm(inp.dataset.answer);
+      inp.classList.toggle('ok', ok);
+      inp.classList.toggle('bad', !ok);
+    });
+  }
+
+  document.getElementById('grade').addEventListener('click', function(){
+    graded = true;
+    var n = blanks.filter(function(inp){ return norm(inp.value) === norm(inp.dataset.answer); }).length;
+    paint();
+    var banner = document.getElementById('banner');
+    banner.hidden = false;
+    if(n === 4){
+      banner.className = 'banner ok';
+      banner.textContent = '🎉 4문제 모두 정답! 객체 상태와 지역 변수를 정확히 구분했네요.';
+    } else {
+      banner.className = 'banner amber';
+      banner.textContent = '4문제 중 ' + n + '개 정답 — 초록색은 정답, 빨간색은 다시 볼 칸이에요. 고쳐서 다시 채점해도 돼요.';
+    }
+  });
+
+  blanks.forEach(function(inp){ inp.addEventListener('input', paint); });
+
+  document.getElementById('reset').addEventListener('click', function(){
+    graded = false;
+    blanks.forEach(function(inp){ inp.value = ''; inp.classList.remove('ok', 'bad'); });
+    document.getElementById('banner').hidden = true;
+    var key = document.getElementById('key');
+    key.hidden = true;
+    document.getElementById('toggle').textContent = '정답·해설 보기';
+  });
+
+  document.getElementById('toggle').addEventListener('click', function(){
+    var key = document.getElementById('key');
+    key.hidden = !key.hidden;
+    document.getElementById('toggle').textContent = key.hidden ? '정답·해설 보기' : '정답·해설 숨기기';
+  });
+</script>
+</body>
+</html>
