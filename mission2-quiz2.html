@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>과제2 데일리 퀴즈 ③ (심화) — 응용·변형</title>
+<title>과제2 데일리 퀴즈 ② (심화) — 응용·변형</title>
 <style>
   :root{
     --page-bg:#eceef5; --card:#ffffff; --ink:#1f2430; --sub:#5b6472;
@@ -93,13 +93,13 @@
 </head>
 <body>
   <div class="card">
-    <div class="eyebrow"># 과제2 · 데일리 퀴즈 ③ (심화)</div>
-    <h1>🧠 응용·변형 6문제 — 개념이 진짜 붙었나?</h1>
-    <p class="intro">퀴즈①(변수 범위)·퀴즈②(반복+예외)에서 배운 걸 이번엔 <b>내 코드가 아닌 새로운 상황에 적용</b>하고, 살짝 <b>비틀어</b> 봤어요. 객관식·출력 예측·빈칸이 섞여 있고 전보다 조금 어렵습니다. 6문제를 다 풀고 아래 <b>채점하기</b>를 눌러보세요.</p>
+    <div class="eyebrow"># 과제2 · 데일리 퀴즈 ② (심화)</div>
+    <h1>🧠 응용·변형 심화 6문제 — 개념이 진짜 붙었나?</h1>
+    <p class="intro">앞서 배운 <b>변수 범위</b>·<b>복사</b>·<b>반복</b>·<b>예외 처리</b> 개념을, 이번엔 <b>새로운 코드에 적용</b>하고 살짝 <b>비틀어</b> 봤어요. 객관식·출력 예측·빈칸이 섞여 있고, 얕은 복사·else/finally·예외 던지기 같은 <b>한 단계 깊은 내용</b>이 들어갑니다. 6문제를 다 풀고 <b>채점하기</b>를 눌러보세요.</p>
 
     <!-- Q1 -->
     <div class="q" data-type="choice">
-      <div class="q-head">문제 1 <span class="tag">퀴즈① 변형</span><span class="badge"></span></div>
+      <div class="q-head">문제 1 <span class="tag">변형</span><span class="badge"></span></div>
       <div class="q-prompt">아래 코드를 실행하면 <code>print(picked)</code>의 출력은?</div>
       <div class="code">
 <div class="ln">import random</div>
@@ -114,7 +114,7 @@
         <button class="opt" data-correct="true">None</button>
         <button class="opt" data-correct="false">TypeError</button>
       </div>
-      <div class="explain" hidden><span class="a">정답: None.</span> <code>shuffle()</code>는 리스트를 <b>그 자리에서 직접 섞고, 반환값은 None</b>이에요. 그래서 picked엔 None이 담깁니다. 퀴즈①에서 <code>order = self.quizzes[:]</code>로 복사본을 만든 뒤 <code>random.shuffle(order)</code>로 order를 직접 섞은 이유가 바로 이거예요 — 반환값을 받아 쓰는 게 아니라, 넘긴 리스트 자체가 섞이는 거죠.</div>
+      <div class="explain" hidden><span class="a">정답: None.</span> <code>shuffle()</code>는 리스트를 <b>그 자리에서 직접 섞고, 반환값은 None</b>이에요. 그래서 picked엔 None이 담깁니다. 이래서 리스트를 섞을 땐 <code>order = cards[:]</code>로 복사본을 만든 뒤 <code>random.shuffle(order)</code>처럼 <b>넘긴 리스트 자체</b>를 섞어요 — 반환값을 받아 쓰는 게 아니라요.</div>
     </div>
 
     <!-- Q2 -->
@@ -137,60 +137,65 @@
         <button class="opt" data-correct="false">NameError가 난다</button>
         <button class="opt" data-correct="false">에러 없이 count가 0으로 유지된다</button>
       </div>
-      <div class="explain" hidden><span class="a">정답: AttributeError.</span> <code>__init__</code> 안의 <code>count = 0</code>은 <code>self.count</code>가 아니라 잠깐 쓰고 사라지는 <b>지역 변수</b>예요. 그래서 객체엔 count가 저장되지 않고, <code>bump()</code>의 <code>self.count += 1</code>에서 "그런 속성 없음" → AttributeError. 퀴즈①의 self vs 변수 규칙이 클래스만 바뀌어도 똑같이 적용됩니다. 고치려면 <code>self.count = 0</code>.</div>
+      <div class="explain" hidden><span class="a">정답: AttributeError.</span> <code>__init__</code> 안의 <code>count = 0</code>은 <code>self.count</code>가 아니라 잠깐 쓰고 사라지는 <b>지역 변수</b>예요. 그래서 객체엔 count가 저장되지 않고, <code>bump()</code>의 <code>self.count += 1</code>에서 "그런 속성 없음" → AttributeError. self vs 지역 변수 규칙은 클래스만 바뀌어도 똑같이 적용됩니다. 고치려면 <code>self.count = 0</code>.</div>
     </div>
 
     <!-- Q3 -->
-    <div class="q" data-type="predict">
-      <div class="q-head">문제 3 <span class="tag">응용</span><span class="badge"></span></div>
-      <div class="q-prompt">출력값을 예측해서 적어보세요.</div>
+    <div class="q" data-type="choice">
+      <div class="q-head">문제 3 <span class="tag">심화</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>[:]</code>로 복사했는데도… 출력은?</div>
       <div class="code">
-<div class="ln">a = [1, 2, 3]</div>
-<div class="ln">b = a</div>
-<div class="ln">b.append(4)</div>
-<div class="ln">print(len(a))</div>
+<div class="ln">grid = [[1, 2], [3, 4]]</div>
+<div class="ln">shallow = grid[:]</div>
+<div class="ln">shallow[0].append(99)</div>
+<div class="ln">print(grid)</div>
       </div>
-      <div class="ansrow">출력 →
-        <input class="ans js-input" data-answer="4" placeholder="?" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="문제 3 출력">
+      <div class="choices">
+        <button class="opt" data-correct="false">[[1, 2], [3, 4]]</button>
+        <button class="opt" data-correct="true">[[1, 2, 99], [3, 4]]</button>
+        <button class="opt" data-correct="false">[[1, 2, 99], [3, 4, 99]]</button>
+        <button class="opt" data-correct="false">에러가 난다</button>
       </div>
-      <div class="explain" hidden><span class="a">정답: 4.</span> <code>b = a</code>는 리스트를 <b>복사</b>하는 게 아니라, 같은 리스트에 이름표를 하나 더 붙이는 거예요. 그래서 <code>b.append(4)</code>면 a도 같이 커져서 <code>len(a)</code>는 4. 원본을 지키려면 <code>b = a[:]</code> 또는 <code>b = a.copy()</code>. 퀴즈①의 <code>[:]</code>가 왜 필요했는지가 정확히 이 이유예요.</div>
+      <div class="explain" hidden><span class="a">정답: [[1, 2, 99], [3, 4]].</span> <code>grid[:]</code>는 <b>바깥 리스트만</b> 새로 만드는 얕은 복사예요. 안에 든 [1, 2]와 [3, 4]는 여전히 원본과 <b>같은 객체</b>를 가리켜서, <code>shallow[0].append(99)</code>가 grid[0]까지 바꿔버립니다. 그래서 [[1, 2, 99], [3, 4]]. <code>[:]</code>가 "완전 복사"가 아니라 <b>한 겹만</b> 복사라는 것 — 중첩 구조까지 완전히 떼어내려면 <code>copy.deepcopy()</code>를 써요.</div>
     </div>
 
     <!-- Q4 -->
     <div class="q" data-type="choice">
-      <div class="q-head">문제 4 <span class="tag">퀴즈② 응용</span><span class="badge"></span></div>
-      <div class="q-prompt">이 코드의 출력은?</div>
+      <div class="q-head">문제 4 <span class="tag">심화</span><span class="badge"></span></div>
+      <div class="q-prompt">무엇이, 어떤 순서로 출력될까요?</div>
       <div class="code">
 <div class="ln">try:</div>
-<div class="ln">    n = int(<span class="str">"10"</span>)</div>
-<div class="ln">    result = 100 / (n - 10)</div>
+<div class="ln">    x = int(<span class="str">"5"</span>)</div>
 <div class="ln">except ValueError:</div>
 <div class="ln">    print(<span class="str">"A"</span>)</div>
-<div class="ln">except ZeroDivisionError:</div>
+<div class="ln">else:</div>
 <div class="ln">    print(<span class="str">"B"</span>)</div>
+<div class="ln">finally:</div>
+<div class="ln">    print(<span class="str">"C"</span>)</div>
       </div>
       <div class="choices">
-        <button class="opt" data-correct="false">A</button>
-        <button class="opt" data-correct="true">B</button>
-        <button class="opt" data-correct="false">A와 B 둘 다</button>
-        <button class="opt" data-correct="false">아무것도 출력되지 않고 에러로 종료</button>
+        <button class="opt" data-correct="false">"A" 다음 "C"</button>
+        <button class="opt" data-correct="true">"B" 다음 "C"</button>
+        <button class="opt" data-correct="false">"A", "B", "C" 셋 다</button>
+        <button class="opt" data-correct="false">"B"만 출력</button>
       </div>
-      <div class="explain" hidden><span class="a">정답: B.</span> <code>int("10")</code>은 문제없이 10이 되고, 다음 줄 <code>100 / (10 - 10) = 100 / 0</code>에서 ZeroDivisionError가 나요. try 안에서 예외가 터지면 <b>그 아래 줄은 건너뛰고</b>, 종류가 맞는 except로 점프 → 두 번째 except가 잡아 "B". 첫 번째 <code>except ValueError</code>는 해당이 안 돼서 실행되지 않습니다.</div>
+      <div class="explain" hidden><span class="a">정답: "B" 다음 "C".</span> <code>int("5")</code>는 성공해서 <code>except ValueError</code>는 건너뛰어요. <code>else</code>는 <b>try에서 예외가 안 났을 때만</b> 실행되니 "B". <code>finally</code>는 예외 여부와 상관없이 <b>항상</b> 실행 → "C". 그래서 B, C 순서. (만약 try에서 예외가 났다면 except가 "A"를 찍고, else는 건너뛰고, finally "C"가 나왔겠죠.)</div>
     </div>
 
     <!-- Q5 -->
     <div class="q" data-type="fill">
-      <div class="q-head">문제 5 <span class="tag">퀴즈② 확장</span><span class="badge"></span></div>
-      <div class="q-prompt">퀴즈②의 <code>read_int</code>를 <b>재사용</b>해서, 범위까지 검사하는 함수예요. 빈칸 2개를 채우세요.</div>
+      <div class="q-head">문제 5 <span class="tag">심화</span><span class="badge"></span></div>
+      <div class="q-prompt">이번엔 <b>무한히</b> 묻지 않고, 정해진 횟수만 시도하고 실패하면 예외를 던지는 함수예요. 빈칸 3개를 채우세요.</div>
       <div class="code">
-<div class="ln">def read_int_in_range(prompt, low, high):</div>
-<div class="ln">    while True:</div>
-<div class="ln">        n = <input class="blank js-input" data-answer="read_int" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="문제5 빈칸1">(prompt)</div>
-<div class="ln">        if low &lt;= n &lt;= <input class="blank js-input" data-answer="high" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="문제5 빈칸2">:</div>
-<div class="ln">            return n</div>
-<div class="ln">        print(f<span class="str">"{low}~{high} 사이로 입력하세요."</span>)</div>
+<div class="ln">def read_int(prompt, max_tries=3):</div>
+<div class="ln">    for _ in range(<input class="blank js-input" data-answer="max_tries" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="문제5 빈칸1">):</div>
+<div class="ln">        try:</div>
+<div class="ln">            return int(input(<input class="blank js-input" data-answer="prompt" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="문제5 빈칸2">))</div>
+<div class="ln">        except ValueError:</div>
+<div class="ln">            print(<span class="str">"숫자가 아니에요. 다시 입력하세요."</span>)</div>
+<div class="ln">    <input class="blank js-input" data-answer="raise" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="문제5 빈칸3"> ValueError(<span class="str">"여러 번 틀렸습니다."</span>)</div>
       </div>
-      <div class="explain" hidden><span class="a">정답: read_int, high.</span> 이미 만든 <code>read_int</code>를 그대로 불러(<code>n = read_int(prompt)</code>) 숫자 입력 검증을 재사용하고, 거기에 범위 검사만 얹은 거예요. <code>low &lt;= n &lt;= high</code>는 파이썬에서 쓸 수 있는 <b>연쇄 비교</b>로, low 이상이고 high 이하인지를 한 번에 확인해요. 함수를 잘게 만들어두면 이렇게 조립해서 더 큰 기능을 만들 수 있습니다.</div>
+      <div class="explain" hidden><span class="a">정답: max_tries, prompt, raise.</span> 무한 반복 대신 <b>정해진 횟수(max_tries)만큼만</b> 시도해요. 성공하면 return으로 바로 빠져나가고, <code>for</code>가 끝날 때까지 한 번도 성공 못 하면 <b>루프 아래 줄</b>로 내려와 <code>raise</code>로 예외를 <b>직접 던집니다</b>. <code>raise</code>는 "여기서 문제가 생겼다"고 알리며 흐름을 멈추는 명령이에요. 무한히 다시 묻던 <code>while True</code> 버전과 달리, 몇 번 실패하면 포기하고 호출한 쪽에 알려주는 구조죠.</div>
     </div>
 
     <!-- Q6 -->
@@ -207,7 +212,7 @@
         <button class="opt" data-correct="false">10</button>
         <button class="opt" data-correct="false">None</button>
       </div>
-      <div class="explain" hidden><span class="a">정답: 0.</span> <code>scores["lee"]</code>로 접근하면 없는 키라 KeyError가 나지만, <code>scores.get("lee", 0)</code>은 키가 없을 때 <b>기본값 0</b>을 돌려줘요. 저장 파일을 불러올 때 없는 항목 때문에 프로그램이 터지는 걸 예방하는 방법 — 퀴즈 코드에서 <code>except KeyError</code>로 잡던 상황을, 아예 안 생기게 막는 쪽이죠.</div>
+      <div class="explain" hidden><span class="a">정답: 0.</span> <code>scores["lee"]</code>로 접근하면 없는 키라 KeyError가 나지만, <code>scores.get("lee", 0)</code>은 키가 없을 때 <b>기본값 0</b>을 돌려줘요. 저장 파일을 불러올 때 없는 항목 때문에 프로그램이 터지는 걸 예방하는 방법 — <code>except KeyError</code>로 잡아야 할 상황을 아예 안 생기게 막는 쪽이죠.</div>
     </div>
 
     <div class="btns">
@@ -227,7 +232,6 @@
   var explainShown = false;
   function norm(s){ return (s || '').replace(/\s+/g, '').toLowerCase(); }
 
-  // 객관식 선택
   questions.forEach(function(q){
     var group = q.querySelector('.choices');
     if(!group) return;
