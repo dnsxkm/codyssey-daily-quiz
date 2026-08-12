@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>과제2 데일리 퀴즈 ③ (심화) — 응용·변형</title>
+<style>
+  :root{
+    --page-bg:#eceef5; --card:#ffffff; --ink:#1f2430; --sub:#5b6472;
+    --accent:#4f46e5; --accent-dark:#4338ca;
+    --code-bg:#1b1e2b; --code-ink:#e6e9f0; --code-cmt:#6b7488; --code-str:#9ece6a;
+    --ok:#16a34a; --ok-bg:rgba(22,163,74,.16);
+    --bad:#dc2626; --bad-bg:rgba(220,38,38,.16);
+    --blank-border:#5b6479; --blank-bg:rgba(148,163,184,.16);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--page-bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo",
+      "Noto Sans KR",Roboto,sans-serif;
+    padding:24px 14px;
+  }
+  .card{max-width:720px; margin:0 auto; background:var(--card);
+    border-radius:18px; padding:26px 22px; box-shadow:0 8px 30px rgba(20,25,45,.08);}
+  .eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.5px; font-weight:700; color:var(--accent); letter-spacing:.4px;}
+  h1{font-size:22px; font-weight:800; margin:8px 0 6px; line-height:1.3;}
+  .intro{font-size:14.5px; line-height:1.7; color:var(--sub); margin:0 0 6px;}
+  .intro b{color:var(--ink);}
+
+  .code{background:var(--code-bg); border-radius:12px; padding:14px 14px; overflow-x:auto;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; margin-top:4px;}
+  .ln{white-space:pre; line-height:25px; color:var(--code-ink);}
+  .cmt{color:var(--code-cmt); font-style:italic;}
+  .str{color:var(--code-str);}
+
+  .blank{width:13ch; font-family:inherit; font-size:inherit; color:var(--code-ink);
+    background:var(--blank-bg); border:1.5px solid var(--blank-border); border-radius:6px;
+    padding:0 6px; margin:0 2px; text-align:center;}
+  .blank::placeholder{color:#6b7488;}
+  .blank:focus{outline:none; border-color:#818cf8; box-shadow:0 0 0 2px rgba(129,140,248,.30);}
+  .blank.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .blank.bad{border-color:var(--bad); background:var(--bad-bg);}
+
+  .ansrow{margin-top:10px; display:flex; align-items:center; gap:8px; font-size:14px; color:var(--ink);}
+  .ans{width:14ch; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:14px;
+    color:var(--ink); background:#fff; border:1.5px solid var(--blank-border); border-radius:8px;
+    padding:5px 8px; text-align:center;}
+  .ans:focus{outline:none; border-color:#818cf8; box-shadow:0 0 0 2px rgba(129,140,248,.30);}
+  .ans.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .ans.bad{border-color:var(--bad); background:var(--bad-bg);}
+
+  .q{border:1px solid #e7e9f0; border-radius:14px; padding:16px; margin-top:14px; background:#fff;}
+  .q.ok{border-color:#bbf7d0; background:#f6fef9;}
+  .q.bad{border-color:#fecaca; background:#fffafa;}
+  .q-head{display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:800;
+    color:var(--ink); margin-bottom:8px;}
+  .tag{font-size:11.5px; font-weight:700; color:var(--accent-dark); background:#eef1f8;
+    padding:2px 9px; border-radius:999px;}
+  .badge{margin-left:auto; font-size:13px; font-weight:800;}
+  .badge.ok{color:var(--ok);} .badge.bad{color:var(--bad);}
+  .q-prompt{font-size:14px; line-height:1.65; color:var(--ink); margin-bottom:4px;}
+
+  .choices{display:flex; flex-direction:column; gap:8px; margin-top:10px;}
+  .opt{text-align:left; font-size:14px; padding:10px 12px; border:1.5px solid #d7dbe6;
+    border-radius:10px; background:#fff; cursor:pointer; color:var(--ink); font-family:inherit;}
+  .opt:hover{border-color:#b9c0d4;}
+  .opt.sel{border-color:var(--accent); background:#eef0ff;}
+  .opt.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .opt.bad{border-color:var(--bad); background:var(--bad-bg);}
+  .opt:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .explain{margin-top:12px; padding:12px 14px; background:#f1f5ff; border:1px solid #dfe6fb;
+    border-radius:10px; font-size:13.5px; line-height:1.7; color:var(--sub);}
+  .explain b{color:var(--ink);}
+  .explain .a{font-weight:800; color:var(--accent-dark);}
+  .explain code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--ink);}
+
+  .btns{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:20px;}
+  .btn{font-size:15px; border-radius:10px; cursor:pointer; padding:11px 20px;}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .btn.primary{background:var(--accent); color:#fff; border:none; font-weight:700;}
+  .btn.secondary{background:#eceef5; color:var(--ink); border:1px solid #d7dbe6; font-weight:600;}
+  .btn.link{background:transparent; color:var(--accent); border:none; font-weight:600;
+    padding:11px 6px; text-decoration:underline;}
+
+  .banner{margin-top:16px; padding:12px 16px; border-radius:10px; font-size:14.5px; font-weight:600;}
+  .banner.ok{background:#dcfce7; color:#166534;}
+  .banner.amber{background:#fef3c7; color:#b45309;}
+
+  .foot{margin-top:18px; font-size:12.5px; color:var(--code-cmt); text-align:center;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="eyebrow"># 과제2 · 데일리 퀴즈 ③ (심화)</div>
+    <h1>🧠 응용·변형 6문제 — 개념이 진짜 붙었나?</h1>
+    <p class="intro">퀴즈①(변수 범위)·퀴즈②(반복+예외)에서 배운 걸 이번엔 <b>내 코드가 아닌 새로운 상황에 적용</b>하고, 살짝 <b>비틀어</b> 봤어요. 객관식·출력 예측·빈칸이 섞여 있고 전보다 조금 어렵습니다. 6문제를 다 풀고 아래 <b>채점하기</b>를 눌러보세요.</p>
+
+    <!-- Q1 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">문제 1 <span class="tag">퀴즈① 변형</span><span class="badge"></span></div>
+      <div class="q-prompt">아래 코드를 실행하면 <code>print(picked)</code>의 출력은?</div>
+      <div class="code">
+<div class="ln">import random</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">questions = [<span class="str">"Q1"</span>, <span class="str">"Q2"</span>, <span class="str">"Q3"</span>]</div>
+<div class="ln">picked = random.shuffle(questions)</div>
+<div class="ln">print(picked)</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">무작위로 섞인 새 리스트</button>
+        <button class="opt" data-correct="false">원본 그대로의 리스트</button>
+        <button class="opt" data-correct="true">None</button>
+        <button class="opt" data-correct="false">TypeError</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: None.</span> <code>shuffle()</code>는 리스트를 <b>그 자리에서 직접 섞고, 반환값은 None</b>이에요. 그래서 picked엔 None이 담깁니다. 퀴즈①에서 <code>order = self.quizzes[:]</code>로 복사본을 만든 뒤 <code>random.shuffle(order)</code>로 order를 직접 섞은 이유가 바로 이거예요 — 반환값을 받아 쓰는 게 아니라, 넘긴 리스트 자체가 섞이는 거죠.</div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">문제 2 <span class="tag">응용</span><span class="badge"></span></div>
+      <div class="q-prompt">다른 클래스예요. 이 코드를 실행하면?</div>
+      <div class="code">
+<div class="ln">class Counter:</div>
+<div class="ln">    def __init__(self):</div>
+<div class="ln">        count = 0</div>
+<div class="ln">    def bump(self):</div>
+<div class="ln">        self.count += 1</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">c = Counter()</div>
+<div class="ln">c.bump()</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">count가 1이 된다</button>
+        <button class="opt" data-correct="true">AttributeError가 난다</button>
+        <button class="opt" data-correct="false">NameError가 난다</button>
+        <button class="opt" data-correct="false">에러 없이 count가 0으로 유지된다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: AttributeError.</span> <code>__init__</code> 안의 <code>count = 0</code>은 <code>self.count</code>가 아니라 잠깐 쓰고 사라지는 <b>지역 변수</b>예요. 그래서 객체엔 count가 저장되지 않고, <code>bump()</code>의 <code>self.count += 1</code>에서 "그런 속성 없음" → AttributeError. 퀴즈①의 self vs 변수 규칙이 클래스만 바뀌어도 똑같이 적용됩니다. 고치려면 <code>self.count = 0</code>.</div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="q" data-type="predict">
+      <div class="q-head">문제 3 <span class="tag">응용</span><span class="badge"></span></div>
+      <div class="q-prompt">출력값을 예측해서 적어보세요.</div>
+      <div class="code">
+<div class="ln">a = [1, 2, 3]</div>
+<div class="ln">b = a</div>
+<div class="ln">b.append(4)</div>
+<div class="ln">print(len(a))</div>
+      </div>
+      <div class="ansrow">출력 →
+        <input class="ans js-input" data-answer="4" placeholder="?" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="문제 3 출력">
+      </div>
+      <div class="explain" hidden><span class="a">정답: 4.</span> <code>b = a</code>는 리스트를 <b>복사</b>하는 게 아니라, 같은 리스트에 이름표를 하나 더 붙이는 거예요. 그래서 <code>b.append(4)</code>면 a도 같이 커져서 <code>len(a)</code>는 4. 원본을 지키려면 <code>b = a[:]</code> 또는 <code>b = a.copy()</code>. 퀴즈①의 <code>[:]</code>가 왜 필요했는지가 정확히 이 이유예요.</div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">문제 4 <span class="tag">퀴즈② 응용</span><span class="badge"></span></div>
+      <div class="q-prompt">이 코드의 출력은?</div>
+      <div class="code">
+<div class="ln">try:</div>
+<div class="ln">    n = int(<span class="str">"10"</span>)</div>
+<div class="ln">    result = 100 / (n - 10)</div>
+<div class="ln">except ValueError:</div>
+<div class="ln">    print(<span class="str">"A"</span>)</div>
+<div class="ln">except ZeroDivisionError:</div>
+<div class="ln">    print(<span class="str">"B"</span>)</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">A</button>
+        <button class="opt" data-correct="true">B</button>
+        <button class="opt" data-correct="false">A와 B 둘 다</button>
+        <button class="opt" data-correct="false">아무것도 출력되지 않고 에러로 종료</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: B.</span> <code>int("10")</code>은 문제없이 10이 되고, 다음 줄 <code>100 / (10 - 10) = 100 / 0</code>에서 ZeroDivisionError가 나요. try 안에서 예외가 터지면 <b>그 아래 줄은 건너뛰고</b>, 종류가 맞는 except로 점프 → 두 번째 except가 잡아 "B". 첫 번째 <code>except ValueError</code>는 해당이 안 돼서 실행되지 않습니다.</div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="q" data-type="fill">
+      <div class="q-head">문제 5 <span class="tag">퀴즈② 확장</span><span class="badge"></span></div>
+      <div class="q-prompt">퀴즈②의 <code>read_int</code>를 <b>재사용</b>해서, 범위까지 검사하는 함수예요. 빈칸 2개를 채우세요.</div>
+      <div class="code">
+<div class="ln">def read_int_in_range(prompt, low, high):</div>
+<div class="ln">    while True:</div>
+<div class="ln">        n = <input class="blank js-input" data-answer="read_int" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="문제5 빈칸1">(prompt)</div>
+<div class="ln">        if low &lt;= n &lt;= <input class="blank js-input" data-answer="high" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="문제5 빈칸2">:</div>
+<div class="ln">            return n</div>
+<div class="ln">        print(f<span class="str">"{low}~{high} 사이로 입력하세요."</span>)</div>
+      </div>
+      <div class="explain" hidden><span class="a">정답: read_int, high.</span> 이미 만든 <code>read_int</code>를 그대로 불러(<code>n = read_int(prompt)</code>) 숫자 입력 검증을 재사용하고, 거기에 범위 검사만 얹은 거예요. <code>low &lt;= n &lt;= high</code>는 파이썬에서 쓸 수 있는 <b>연쇄 비교</b>로, low 이상이고 high 이하인지를 한 번에 확인해요. 함수를 잘게 만들어두면 이렇게 조립해서 더 큰 기능을 만들 수 있습니다.</div>
+    </div>
+
+    <!-- Q6 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">문제 6 <span class="tag">응용</span><span class="badge"></span></div>
+      <div class="q-prompt">이 코드의 출력은?</div>
+      <div class="code">
+<div class="ln">scores = {<span class="str">"kim"</span>: 10}</div>
+<div class="ln">print(scores.get(<span class="str">"lee"</span>, 0))</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">KeyError가 난다</button>
+        <button class="opt" data-correct="true">0</button>
+        <button class="opt" data-correct="false">10</button>
+        <button class="opt" data-correct="false">None</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 0.</span> <code>scores["lee"]</code>로 접근하면 없는 키라 KeyError가 나지만, <code>scores.get("lee", 0)</code>은 키가 없을 때 <b>기본값 0</b>을 돌려줘요. 저장 파일을 불러올 때 없는 항목 때문에 프로그램이 터지는 걸 예방하는 방법 — 퀴즈 코드에서 <code>except KeyError</code>로 잡던 상황을, 아예 안 생기게 막는 쪽이죠.</div>
+    </div>
+
+    <div class="btns">
+      <button id="grade" class="btn primary">채점하기</button>
+      <button id="reset" class="btn secondary">다시 풀기</button>
+      <button id="toggle" class="btn link">정답·해설 보기</button>
+    </div>
+
+    <div id="banner" class="banner" hidden></div>
+
+    <div class="foot">빈칸·출력 정답은 대소문자·공백에 관계없이 채점돼요.</div>
+  </div>
+
+<script>
+  var questions = Array.prototype.slice.call(document.querySelectorAll('.q'));
+  var graded = false;
+  var explainShown = false;
+  function norm(s){ return (s || '').replace(/\s+/g, '').toLowerCase(); }
+
+  // 객관식 선택
+  questions.forEach(function(q){
+    var group = q.querySelector('.choices');
+    if(!group) return;
+    group.querySelectorAll('.opt').forEach(function(opt){
+      opt.addEventListener('click', function(){
+        group.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('sel','ok','bad'); });
+        opt.classList.add('sel');
+        q.classList.remove('ok','bad');
+        var b = q.querySelector('.badge'); if(b){ b.textContent=''; b.className='badge'; }
+      });
+    });
+  });
+
+  function questionCorrect(q){
+    var group = q.querySelector('.choices');
+    if(group){
+      var sel = group.querySelector('.opt.sel');
+      return !!sel && sel.dataset.correct === 'true';
+    }
+    var inputs = Array.prototype.slice.call(q.querySelectorAll('.js-input'));
+    if(inputs.length === 0) return false;
+    return inputs.every(function(inp){ return norm(inp.value) === norm(inp.dataset.answer); });
+  }
+
+  function setExplain(on){
+    explainShown = on;
+    questions.forEach(function(q){
+      var ex = q.querySelector('.explain'); if(ex) ex.hidden = !on;
+    });
+    document.getElementById('toggle').textContent = on ? '정답·해설 숨기기' : '정답·해설 보기';
+  }
+
+  function clearMarks(){
+    questions.forEach(function(q){
+      q.classList.remove('ok','bad');
+      var b = q.querySelector('.badge'); if(b){ b.textContent=''; b.className='badge'; }
+      q.querySelectorAll('.js-input').forEach(function(i){ i.classList.remove('ok','bad'); });
+      q.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('ok','bad'); });
+    });
+  }
+
+  document.getElementById('grade').addEventListener('click', function(){
+    clearMarks();
+    graded = true;
+    var correct = 0;
+    questions.forEach(function(q){
+      var ok = questionCorrect(q);
+      if(ok) correct++;
+      q.classList.add(ok ? 'ok' : 'bad');
+      var badge = q.querySelector('.badge');
+      if(badge){ badge.textContent = ok ? '✓ 정답' : '✗ 다시'; badge.className = 'badge ' + (ok ? 'ok' : 'bad'); }
+      q.querySelectorAll('.js-input').forEach(function(inp){
+        var good = norm(inp.value) === norm(inp.dataset.answer);
+        inp.classList.add(good ? 'ok' : 'bad');
+      });
+      var group = q.querySelector('.choices');
+      if(group){
+        group.querySelectorAll('.opt').forEach(function(opt){
+          if(opt.dataset.correct === 'true') opt.classList.add('ok');
+          else if(opt.classList.contains('sel')) opt.classList.add('bad');
+        });
+      }
+    });
+    setExplain(true);
+    var banner = document.getElementById('banner');
+    banner.hidden = false;
+    if(correct === questions.length){
+      banner.className = 'banner ok';
+      banner.textContent = '🎉 ' + questions.length + '문제 모두 정답! 개념이 내 코드 밖에서도 완전히 붙었네요.';
+    } else {
+      banner.className = 'banner amber';
+      banner.textContent = questions.length + '문제 중 ' + correct + '개 정답 — 초록은 정답, 빨강은 다시 볼 문제예요. 해설 보고 고쳐서 다시 채점해도 돼요.';
+    }
+  });
+
+  document.getElementById('toggle').addEventListener('click', function(){ setExplain(!explainShown); });
+
+  document.getElementById('reset').addEventListener('click', function(){
+    graded = false;
+    clearMarks();
+    questions.forEach(function(q){
+      q.querySelectorAll('.js-input').forEach(function(i){ i.value = ''; });
+      q.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('sel'); });
+    });
+    setExplain(false);
+    document.getElementById('banner').hidden = true;
+  });
+</script>
+</body>
+</html>
