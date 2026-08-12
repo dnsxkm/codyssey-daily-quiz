@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>과제2 데일리 퀴즈 ③ (종합·심화) — 구현 + 이론</title>
+<style>
+  :root{
+    --page-bg:#eceef5; --card:#ffffff; --ink:#1f2430; --sub:#5b6472;
+    --accent:#4f46e5; --accent-dark:#4338ca;
+    --code-bg:#1b1e2b; --code-ink:#e6e9f0; --code-cmt:#6b7488; --code-str:#9ece6a;
+    --ok:#16a34a; --ok-bg:rgba(22,163,74,.16);
+    --bad:#dc2626; --bad-bg:rgba(220,38,38,.16);
+    --blank-border:#5b6479; --blank-bg:rgba(148,163,184,.16);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--page-bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",Roboto,sans-serif;
+    padding:24px 14px;}
+  .card{max-width:720px; margin:0 auto; background:var(--card);
+    border-radius:18px; padding:26px 22px; box-shadow:0 8px 30px rgba(20,25,45,.08);}
+  .eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.5px; font-weight:700; color:var(--accent); letter-spacing:.4px;}
+  h1{font-size:22px; font-weight:800; margin:8px 0 6px; line-height:1.3;}
+  .intro{font-size:14.5px; line-height:1.7; color:var(--sub); margin:0 0 6px;}
+  .intro b{color:var(--ink);}
+
+  .part{margin-top:24px; margin-bottom:2px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.5px; font-weight:800; color:var(--accent-dark); letter-spacing:.4px;}
+  .part-sub{font-size:13px; color:var(--sub); margin:2px 0 0; line-height:1.6;}
+  .concept{margin-top:20px; padding:16px; border:1px solid #dfe3ef; border-radius:14px; background:#fafbff;}
+  .concept-title{font-size:15px; font-weight:800; margin-bottom:7px; color:var(--ink);}
+  .concept-desc{font-size:13.5px; line-height:1.7; color:var(--sub); margin-bottom:9px;}
+  .concept-desc b{color:var(--ink);}
+  .mini-code{background:var(--code-bg); border-radius:10px; padding:11px 12px; overflow-x:auto;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; line-height:1.8; color:var(--code-ink);}
+  .concept-note{margin-top:9px; padding:9px 11px; border-radius:9px; background:#eef1f8; font-size:13px; line-height:1.65; color:var(--sub);}
+  .concept-note b{color:var(--ink);}
+
+  .code{background:var(--code-bg); border-radius:12px; padding:14px 14px; overflow-x:auto;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; margin-top:4px;}
+  .ln{white-space:pre; line-height:25px; color:var(--code-ink);}
+  .cmt{color:var(--code-cmt); font-style:italic;}
+  .str{color:var(--code-str);}
+
+  .blank{width:12ch; font-family:inherit; font-size:inherit; color:var(--code-ink);
+    background:var(--blank-bg); border:1.5px solid var(--blank-border); border-radius:6px;
+    padding:0 6px; margin:0 2px; text-align:center;}
+  .blank::placeholder{color:#6b7488;}
+  .blank:focus{outline:none; border-color:#818cf8; box-shadow:0 0 0 2px rgba(129,140,248,.30);}
+  .blank.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .blank.bad{border-color:var(--bad); background:var(--bad-bg);}
+
+  .ansrow{margin-top:10px; display:flex; align-items:center; gap:8px; font-size:14px; color:var(--ink); flex-wrap:wrap;}
+  .ansrow code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--ink);}
+  .ans{width:16ch; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:14px;
+    color:var(--ink); background:#fff; border:1.5px solid var(--blank-border); border-radius:8px;
+    padding:5px 8px; text-align:center;}
+  .ans:focus{outline:none; border-color:#818cf8; box-shadow:0 0 0 2px rgba(129,140,248,.30);}
+  .ans.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .ans.bad{border-color:var(--bad); background:var(--bad-bg);}
+
+  .q{border:1px solid #e7e9f0; border-radius:14px; padding:16px; margin-top:12px; background:#fff;}
+  .q.ok{border-color:#bbf7d0; background:#f6fef9;}
+  .q.bad{border-color:#fecaca; background:#fffafa;}
+  .q-head{display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:800; color:var(--ink); margin-bottom:8px;}
+  .tag{font-size:11.5px; font-weight:700; color:var(--accent-dark); background:#eef1f8; padding:2px 9px; border-radius:999px;}
+  .badge{margin-left:auto; font-size:13px; font-weight:800;}
+  .badge.ok{color:var(--ok);} .badge.bad{color:var(--bad);}
+  .q-prompt{font-size:14px; line-height:1.65; color:var(--ink); margin-bottom:4px;}
+  .q-prompt code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+
+  .choices{display:flex; flex-direction:column; gap:8px; margin-top:10px;}
+  .opt{text-align:left; font-size:14px; padding:10px 12px; border:1.5px solid #d7dbe6; border-radius:10px;
+    background:#fff; cursor:pointer; color:var(--ink); font-family:inherit;}
+  .opt:hover{border-color:#b9c0d4;}
+  .opt.sel{border-color:var(--accent); background:#eef0ff;}
+  .opt.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .opt.bad{border-color:var(--bad); background:var(--bad-bg);}
+  .opt:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .explain{margin-top:12px; padding:12px 14px; background:#f1f5ff; border:1px solid #dfe6fb; border-radius:10px;
+    font-size:13.5px; line-height:1.7; color:var(--sub);}
+  .explain b{color:var(--ink);}
+  .explain .a{font-weight:800; color:var(--accent-dark);}
+  .explain code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--ink);}
+
+  .btns{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:20px;}
+  .btn{font-size:15px; border-radius:10px; cursor:pointer; padding:11px 20px;}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .btn.primary{background:var(--accent); color:#fff; border:none; font-weight:700;}
+  .btn.secondary{background:#eceef5; color:var(--ink); border:1px solid #d7dbe6; font-weight:600;}
+  .btn.link{background:transparent; color:var(--accent); border:none; font-weight:600; padding:11px 6px; text-decoration:underline;}
+
+  .banner{margin-top:16px; padding:12px 16px; border-radius:10px; font-size:14.5px; font-weight:600;}
+  .banner.ok{background:#dcfce7; color:#166534;}
+  .banner.amber{background:#fef3c7; color:#b45309;}
+
+  .foot{margin-top:18px; font-size:12.5px; color:var(--code-cmt); text-align:center;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="eyebrow"># 과제2 · 데일리 퀴즈 ③ (종합·심화)</div>
+    <h1>🧩 구현 + 이론 종합 — 한 단계 위로</h1>
+    <p class="intro"><b>PART 1</b>은 점수판(Leaderboard)을 정렬·집계하는 클래스예요. 이번엔 <code>self.○○</code> 채우기가 아니라 <b>정렬 기준(lambda) · 리스트 컴프리헨션 · max(key=) · 삼항식 · enumerate</b> 같은 걸 다룹니다. <b>PART 2</b>는 <b>이론 6문제</b>. 총 12칸이고, PART 1에 나오는 <code>key=lambda</code>와 <code>enumerate</code>는 바로 아래에서 먼저 설명합니다.</p>
+
+    <div class="part">▚ 시작 전에 꼭 알아둘 개념</div>
+    <p class="part-sub">PART 1의 빈칸을 풀기 전에 아래 두 개념만 먼저 이해하면 됩니다. 특히 <code>key=lambda</code>와 <code>enumerate</code>가 이번 문제의 핵심이에요.</p>
+
+    <div class="concept">
+      <div class="concept-title">① <code>key=lambda</code> — "무엇을 기준으로 정렬할지" 정하기</div>
+      <div class="concept-desc">
+        <code>sorted()</code>는 기본적으로 원소 자체를 비교하지만, <code>key=</code>를 주면
+        <b>"각 원소에서 어떤 값을 꺼내서 비교할지"</b>를 정할 수 있어요.
+        <code>lambda</code>는 짧은 함수를 한 줄로 만드는 문법입니다.
+      </div>
+      <div class="mini-code">
+        sorted(scores, key=lambda p: p[1])
+      </div>
+      <div class="concept-note">
+        <b>읽는 법:</b> "scores의 각 원소 <code>p</code>에서 <code>p[1]</code>을 꺼내 그 값을 기준으로 정렬한다."<br>
+        예를 들어 <code>("민수", 80)</code>에서 <code>p[0]</code>은 이름, <code>p[1]</code>은 점수입니다.
+        따라서 <code>key=lambda p: p[1]</code>이면 <b>점수 기준 정렬</b>이에요.
+      </div>
+    </div>
+
+    <div class="concept">
+      <div class="concept-title">② <code>enumerate</code> — "번호와 원소를 같이" 꺼내기</div>
+      <div class="concept-desc">
+        리스트를 <code>for</code>문으로 돌릴 때 <b>순서 번호(index)와 원소를 동시에</b> 받고 싶다면
+        <code>enumerate()</code>를 사용합니다.
+      </div>
+      <div class="mini-code">
+        for i, name in enumerate(["철수", "영희"], start=1):<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;print(i, name)
+      </div>
+      <div class="concept-note">
+        <b>결과:</b> <code>1 철수</code>, <code>2 영희</code><br>
+        <code>start=1</code>을 주면 번호가 1부터 시작하고, 생략하면 기본값은 <code>0</code>입니다.
+        그래서 이번 문제의 <code>enumerate(self.ranking(), start=1)</code>은 <b>1위, 2위, 3위...</b>를 만들기 위해 사용합니다.
+      </div>
+    </div>
+
+    <div class="part">▚ PART 1 · 구현 (심화)</div>
+    <p class="part-sub">각 원소가 <code>(이름, 점수)</code> 튜플인 점수 목록을 정렬하고, 커트라인 통과자를 뽑고, 순위를 매겨 출력하는 클래스예요 — 빈칸 6곳을 채우세요.</p>
+
+    <!-- Implementation (advanced) -->
+    <div class="q" data-type="fill">
+      <div class="q-head">Leaderboard 클래스 <span class="tag">심화 · 빈칸 6</span><span class="badge"></span></div>
+      <div class="code">
+<div class="ln">class Leaderboard:</div>
+<div class="ln">    def __init__(self, scores):</div>
+<div class="ln">        self.scores = scores   <span class="cmt"># (이름, 점수) 튜플 목록</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln">    def ranking(self):</div>
+<div class="ln">        return sorted(self.scores, key=lambda p: p[<input class="blank js-input" data-answer="1" placeholder="_" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸1">], reverse=<input class="blank js-input" data-answer="True" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸2">)</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">    def passers(self, cutoff=60):</div>
+<div class="ln">        return [name for name, score in self.scores if score &gt;= <input class="blank js-input" data-answer="cutoff" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸3">]</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">    def best_name(self):</div>
+<div class="ln">        return max(self.scores, key=lambda p: p[1])[<input class="blank js-input" data-answer="0" placeholder="_" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸4">]</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">    def grade(self, score):</div>
+<div class="ln">        return <span class="str">"합격"</span> if score &gt;= 60 <input class="blank js-input" data-answer="else" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸5"> <span class="str">"불합격"</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln">    def report(self):</div>
+<div class="ln">        for rank, (name, score) in enumerate(self.ranking(), start=<input class="blank js-input" data-answer="1" placeholder="_" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸6">):</div>
+<div class="ln">            print(<span class="str">f"{rank}위: {name} ({score})"</span>)</div>
+      </div>
+      <div class="explain" hidden>
+        <span class="a">정답: 1 · True · cutoff · 0 · else · 1</span>
+        <div style="margin-top:8px">① 각 원소는 <code>(이름, 점수)</code> 튜플이라, 점수로 정렬하려면 lambda가 <code>p[1]</code>(=점수)을 돌려줘야 해요. ② 높은 점수부터 = 내림차순 = <code>reverse=True</code>. ③ 컴프리헨션에서 커트라인은 매개변수 <code>cutoff</code>를 그대로 씀. ④ <code>max(...)</code>는 점수가 가장 높은 <b>(이름, 점수) 튜플</b>을 주고, <code>[0]</code>으로 이름만 꺼냄. ⑤ 삼항식 <code>A if 조건 else B</code> — 조건이 참이면 앞, 아니면 뒤. ⑥ 등수는 1부터 세야 하니 <code>enumerate(..., start=1)</code>. (start를 안 주면 0부터라 '0위'가 돼요.)</div>
+      </div>
+    </div>
+
+    <div class="part">▚ PART 2 · 이론</div>
+    <p class="part-sub">코드 없이 개념만. 객관식 5 + 단답 1.</p>
+
+    <!-- T1 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">이론 1 <span class="tag">인스턴스 속성</span><span class="badge"></span></div>
+      <div class="q-prompt"><b>인스턴스 속성(self.○○)</b>에 대한 설명으로 옳은 것은?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">메서드가 끝나면 값이 사라진다</button>
+        <button class="opt" data-correct="true">같은 객체의 다른 메서드에서도 접근할 수 있다</button>
+        <button class="opt" data-correct="false">self 없이 이름만으로 어디서든 쓸 수 있다</button>
+        <button class="opt" data-correct="false">객체마다 값을 따로 가질 수 없다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> 인스턴스 속성은 <b>객체에 저장</b>돼서 객체가 살아있는 동안 유지되고, 같은 객체의 어느 메서드에서든 <code>self.○○</code>로 접근할 수 있어요. 반대로 지역 변수는 그 메서드 안에서만 잠깐 존재하다 사라집니다.</div>
+    </div>
+
+    <!-- T2 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">이론 2 <span class="tag">복사</span><span class="badge"></span></div>
+      <div class="q-prompt">중첩 리스트 <code>data = [[1, 2], [3]]</code>를 복사할 때, <b>안쪽 리스트까지 완전히 별개</b>로 만들려면?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">data[:]</button>
+        <button class="opt" data-correct="false">list(data)</button>
+        <button class="opt" data-correct="false">data.copy()</button>
+        <button class="opt" data-correct="true">copy.deepcopy(data)</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 4번.</span> <code>data[:]</code>, <code>list(data)</code>, <code>data.copy()</code>는 모두 <b>얕은 복사</b>라 바깥 리스트만 새로 만들고 안쪽 리스트는 원본과 공유해요. 안쪽까지 완전히 떼어내려면 <code>copy.deepcopy()</code>를 써야 합니다.</div>
+    </div>
+
+    <!-- T3 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">이론 3 <span class="tag">예외 처리</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>except Exception:</code>으로 모든 예외를 뭉뚱그려 잡으면 안 되는 이유로 가장 적절한 것은?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">코드 실행이 느려져서</button>
+        <button class="opt" data-correct="false">문법 오류가 발생해서</button>
+        <button class="opt" data-correct="true">예상 못 한 버그(오타 등)까지 조용히 삼켜서 원인을 놓치게 되어서</button>
+        <button class="opt" data-correct="false">예외를 한 개만 잡을 수 있어서</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 3번.</span> 넓게 잡으면 처리하려던 예외뿐 아니라 <b>예상 못 한 버그</b>(변수명 오타로 인한 NameError 등)까지 같이 삼켜버려서, 문제가 조용히 숨겨지고 디버깅이 어려워져요. 그래서 <code>ValueError</code>, <code>KeyError</code>처럼 처리할 예외만 구체적으로 잡는 게 안전합니다.</div>
+    </div>
+
+    <!-- T4 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">이론 4 <span class="tag">정렬</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>sorted(x)</code>와 <code>x.sort()</code>의 차이로 옳은 것은?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">둘 다 원본 x를 정렬하고 정렬된 리스트를 반환한다</button>
+        <button class="opt" data-correct="true">sorted(x)는 새 리스트를 반환하고, x.sort()는 x를 제자리 정렬하며 None을 반환한다</button>
+        <button class="opt" data-correct="false">sorted(x)는 None을, x.sort()는 새 리스트를 반환한다</button>
+        <button class="opt" data-correct="false">완전히 같다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> <code>sorted(x)</code>는 원본을 건드리지 않고 정렬된 <b>새 리스트</b>를 돌려줘요. 반면 <code>x.sort()</code>는 x <b>자체를 제자리에서</b> 정렬하고 반환값은 None입니다. <code>random.shuffle</code>과 같은 "제자리 변경 → None 반환" 패턴이라, <code>y = x.sort()</code>라고 쓰면 y엔 None이 담겨요.</div>
+    </div>
+
+    <!-- T5 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">이론 5 <span class="tag">비교</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>==</code>와 <code>is</code>의 차이로 옳은 것은?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">둘 다 값이 같은지만 비교한다</button>
+        <button class="opt" data-correct="true">==는 값이 같은지, is는 같은 객체(메모리)인지 비교한다</button>
+        <button class="opt" data-correct="false">is는 그냥 더 빠른 ==다</button>
+        <button class="opt" data-correct="false">문자열에는 is만 쓸 수 있다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> <code>==</code>는 <b>값</b>이 같은지, <code>is</code>는 <b>같은 객체</b>인지(메모리상 동일한지)를 봐요. 예를 들어 내용이 같은 두 리스트는 <code>==</code>는 True지만 서로 다른 객체라 <code>is</code>는 False. None 검사에는 관례상 <code>x is None</code>을 씁니다.</div>
+    </div>
+
+    <!-- T6 -->
+    <div class="q" data-type="fill">
+      <div class="q-head">이론 6 <span class="tag">단답</span><span class="badge"></span></div>
+      <div class="q-prompt">리스트를 <b>제자리에서 직접 섞고 None을 반환</b>하는 random 모듈의 함수 이름은? (함수명만)</div>
+      <div class="ansrow"><code>random.</code><input class="ans js-input" data-answer="shuffle" placeholder="?" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="이론6 단답"></div>
+      <div class="explain" hidden><span class="a">정답: shuffle.</span> <code>random.shuffle(리스트)</code>는 넘긴 리스트를 <b>그 자리에서</b> 섞고 반환값은 None이에요. 그래서 <code>결과 = random.shuffle(x)</code>처럼 쓰면 결과엔 None이 담깁니다 — 섞인 걸 쓰려면 x 자체를 섞고 x를 쓰면 돼요.</div>
+    </div>
+
+    <div class="btns">
+      <button id="grade" class="btn primary">채점하기</button>
+      <button id="reset" class="btn secondary">다시 풀기</button>
+      <button id="toggle" class="btn link">정답·해설 보기</button>
+    </div>
+
+    <div id="banner" class="banner" hidden></div>
+
+    <div class="foot">빈칸·단답 정답은 대소문자·공백에 관계없이 채점돼요.</div>
+  </div>
+
+<script>
+  var questions = Array.prototype.slice.call(document.querySelectorAll('.q'));
+  var explainShown = false;
+  function norm(s){ return (s || '').replace(/\s+/g, '').toLowerCase(); }
+  function matches(inp){
+    var v = norm(inp.value);
+    return (inp.dataset.answer || '').split('|').some(function(a){ return norm(a) === v; });
+  }
+
+  questions.forEach(function(q){
+    var group = q.querySelector('.choices');
+    if(!group) return;
+    group.querySelectorAll('.opt').forEach(function(opt){
+      opt.addEventListener('click', function(){
+        group.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('sel','ok','bad'); });
+        opt.classList.add('sel');
+        q.classList.remove('ok','bad');
+        var b = q.querySelector('.badge'); if(b){ b.textContent=''; b.className='badge'; }
+      });
+    });
+  });
+
+  function qItems(q){
+    var group = q.querySelector('.choices');
+    if(group){
+      var sel = group.querySelector('.opt.sel');
+      var ok = !!sel && sel.dataset.correct === 'true';
+      return { correct: ok ? 1 : 0, total: 1 };
+    }
+    var inputs = Array.prototype.slice.call(q.querySelectorAll('.js-input'));
+    var c = 0;
+    inputs.forEach(function(inp){ if(matches(inp)) c++; });
+    return { correct: c, total: inputs.length };
+  }
+
+  function setExplain(on){
+    explainShown = on;
+    questions.forEach(function(q){ var ex = q.querySelector('.explain'); if(ex) ex.hidden = !on; });
+    document.getElementById('toggle').textContent = on ? '정답·해설 숨기기' : '정답·해설 보기';
+  }
+
+  function clearMarks(){
+    questions.forEach(function(q){
+      q.classList.remove('ok','bad');
+      var b = q.querySelector('.badge'); if(b){ b.textContent=''; b.className='badge'; }
+      q.querySelectorAll('.js-input').forEach(function(i){ i.classList.remove('ok','bad'); });
+      q.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('ok','bad'); });
+    });
+  }
+
+  document.getElementById('grade').addEventListener('click', function(){
+    clearMarks();
+    var totalCorrect = 0, totalItems = 0;
+    questions.forEach(function(q){
+      var s = qItems(q);
+      totalCorrect += s.correct; totalItems += s.total;
+      var full = s.total > 0 && s.correct === s.total;
+      q.classList.add(full ? 'ok' : 'bad');
+      var badge = q.querySelector('.badge');
+      if(badge){
+        if(s.total > 1){ badge.textContent = s.correct + ' / ' + s.total + ' 칸'; }
+        else { badge.textContent = full ? '✓ 정답' : '✗ 다시'; }
+        badge.className = 'badge ' + (full ? 'ok' : 'bad');
+      }
+      q.querySelectorAll('.js-input').forEach(function(inp){
+        inp.classList.add(matches(inp) ? 'ok' : 'bad');
+      });
+      var group = q.querySelector('.choices');
+      if(group){
+        group.querySelectorAll('.opt').forEach(function(opt){
+          if(opt.dataset.correct === 'true') opt.classList.add('ok');
+          else if(opt.classList.contains('sel')) opt.classList.add('bad');
+        });
+      }
+    });
+    setExplain(true);
+    var banner = document.getElementById('banner');
+    banner.hidden = false;
+    if(totalCorrect === totalItems){
+      banner.className = 'banner ok';
+      banner.textContent = '🎉 ' + totalItems + '칸 전부 정답! 심화 문법까지 완전히 잡았네요.';
+    } else {
+      banner.className = 'banner amber';
+      banner.textContent = '총 ' + totalItems + '칸 중 ' + totalCorrect + '개 정답 — 초록은 정답, 빨강은 다시 볼 칸이에요. 해설 보고 고쳐서 다시 채점해도 돼요.';
+    }
+  });
+
+  document.getElementById('toggle').addEventListener('click', function(){ setExplain(!explainShown); });
+
+  document.getElementById('reset').addEventListener('click', function(){
+    clearMarks();
+    questions.forEach(function(q){
+      q.querySelectorAll('.js-input').forEach(function(i){ i.value = ''; });
+      q.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('sel'); });
+    });
+    setExplain(false);
+    document.getElementById('banner').hidden = true;
+  });
+</script>
+</body>
+</html>
