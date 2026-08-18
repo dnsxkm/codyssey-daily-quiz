@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>과제3 데일리 퀴즈 ① (난이도 하) — 부동소수점 & EPSILON</title>
+<style>
+  :root{
+    --page-bg:#eceef5; --card:#ffffff; --ink:#1f2430; --sub:#5b6472;
+    --accent:#4f46e5; --accent-dark:#4338ca;
+    --code-bg:#1b1e2b; --code-ink:#e6e9f0; --code-cmt:#6b7488; --code-str:#9ece6a;
+    --ok:#16a34a; --ok-bg:rgba(22,163,74,.16);
+    --bad:#dc2626; --bad-bg:rgba(220,38,38,.16);
+    --blank-border:#5b6479; --blank-bg:rgba(148,163,184,.16);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--page-bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",Roboto,sans-serif;
+    padding:24px 14px;}
+  .card{max-width:720px; margin:0 auto; background:var(--card);
+    border-radius:18px; padding:26px 22px; box-shadow:0 8px 30px rgba(20,25,45,.08);}
+  .eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.5px; font-weight:700; color:var(--accent); letter-spacing:.4px;}
+  h1{font-size:22px; font-weight:800; margin:8px 0 6px; line-height:1.3;}
+  .intro{font-size:14.5px; line-height:1.7; color:var(--sub); margin:0 0 6px;}
+  .intro b{color:var(--ink);}
+
+  .code{background:var(--code-bg); border-radius:12px; padding:14px 14px; overflow-x:auto;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; margin-top:4px;}
+  .ln{white-space:pre; line-height:25px; color:var(--code-ink);}
+  .cmt{color:var(--code-cmt); font-style:italic;}
+  .str{color:var(--code-str);}
+
+  .blank{width:12ch; font-family:inherit; font-size:inherit; color:var(--code-ink);
+    background:var(--blank-bg); border:1.5px solid var(--blank-border); border-radius:6px;
+    padding:0 6px; margin:0 2px; text-align:center;}
+  .blank::placeholder{color:#6b7488;}
+  .blank:focus{outline:none; border-color:#818cf8; box-shadow:0 0 0 2px rgba(129,140,248,.30);}
+  .blank.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .blank.bad{border-color:var(--bad); background:var(--bad-bg);}
+
+  .q{border:1px solid #e7e9f0; border-radius:14px; padding:16px; margin-top:12px; background:#fff;}
+  .q.ok{border-color:#bbf7d0; background:#f6fef9;}
+  .q.bad{border-color:#fecaca; background:#fffafa;}
+  .q-head{display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:800; color:var(--ink); margin-bottom:8px;}
+  .tag{font-size:11.5px; font-weight:700; color:var(--accent-dark); background:#eef1f8; padding:2px 9px; border-radius:999px;}
+  .badge{margin-left:auto; font-size:13px; font-weight:800;}
+  .badge.ok{color:var(--ok);} .badge.bad{color:var(--bad);}
+  .q-prompt{font-size:14px; line-height:1.65; color:var(--ink); margin-bottom:4px;}
+  .q-prompt code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+
+  .choices{display:flex; flex-direction:column; gap:8px; margin-top:10px;}
+  .opt{text-align:left; font-size:14px; padding:10px 12px; border:1.5px solid #d7dbe6; border-radius:10px;
+    background:#fff; cursor:pointer; color:var(--ink); font-family:inherit;}
+  .opt:hover{border-color:#b9c0d4;}
+  .opt.sel{border-color:var(--accent); background:#eef0ff;}
+  .opt.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .opt.bad{border-color:var(--bad); background:var(--bad-bg);}
+  .opt:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .opt code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+
+  .explain{margin-top:12px; padding:12px 14px; background:#f1f5ff; border:1px solid #dfe6fb; border-radius:10px;
+    font-size:13.5px; line-height:1.7; color:var(--sub);}
+  .explain b{color:var(--ink);}
+  .explain .a{font-weight:800; color:var(--accent-dark);}
+  .explain code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--ink);}
+
+  .btns{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:20px;}
+  .btn{font-size:15px; border-radius:10px; cursor:pointer; padding:11px 20px;}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .btn.primary{background:var(--accent); color:#fff; border:none; font-weight:700;}
+  .btn.secondary{background:#eceef5; color:var(--ink); border:1px solid #d7dbe6; font-weight:600;}
+  .btn.link{background:transparent; color:var(--accent); border:none; font-weight:600; padding:11px 6px; text-decoration:underline;}
+
+  .banner{margin-top:16px; padding:12px 16px; border-radius:10px; font-size:14.5px; font-weight:600;}
+  .banner.ok{background:#dcfce7; color:#166534;}
+  .banner.amber{background:#fef3c7; color:#b45309;}
+
+  .foot{margin-top:18px; font-size:12.5px; color:var(--code-cmt); text-align:center;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="eyebrow"># 과제3 · 데일리 퀴즈 ① (난이도 하)</div>
+    <h1>🔢 부동소수점의 함정 — 왜 0.1 + 0.2 ≠ 0.3?</h1>
+    <p class="intro">과제3(NPU 시뮬레이터)의 핵심은 <b>소수(부동소수점) 비교</b>예요. 컴퓨터가 소수를 다룰 때 생기는 미세한 오차 때문에, 점수를 비교하거나 동점을 판정할 때 특별한 방법이 필요하거든요. 맛보기로 <b>6문제</b>(총 7칸) 풀어보세요 — 출력 예측 위주라 감 잡기 좋아요.</p>
+
+    <!-- Q1 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">문제 1 <span class="tag">출력 예측</span><span class="badge"></span></div>
+      <div class="q-prompt">이 코드의 출력은?</div>
+      <div class="code">
+<div class="ln">print(0.1 + 0.2 == 0.3)</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">True</button>
+        <button class="opt" data-correct="true">False</button>
+        <button class="opt" data-correct="false">0.3</button>
+        <button class="opt" data-correct="false">에러가 난다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: False.</span> 컴퓨터는 0.1, 0.2 같은 소수를 2진수로 <b>정확히</b> 표현하지 못해서 아주 미세한 오차가 생겨요. 그래서 <code>0.1 + 0.2</code>는 딱 0.3이 아니라 <b>0.30000000000000004</b>가 되고, <code>== 0.3</code>은 False가 됩니다. 이게 부동소수점의 함정이에요.</div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">문제 2 <span class="tag">출력 예측</span><span class="badge"></span></div>
+      <div class="q-prompt">그럼 이건 뭐라고 출력될까요?</div>
+      <div class="code">
+<div class="ln">print(0.1 + 0.2)</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">0.3</button>
+        <button class="opt" data-correct="true">0.30000000000000004</button>
+        <button class="opt" data-correct="false">0.300000001</button>
+        <button class="opt" data-correct="false">0.30 (반올림됨)</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 0.30000000000000004.</span> 문제 1에서 말한 미세한 오차가 실제로 이렇게 눈에 보여요. 오차는 아주 작지만 0은 아니라서, <b>소수끼리 <code>==</code>로 비교하면 안 되는</b> 이유가 바로 이겁니다.</div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">문제 3 <span class="tag">개념</span><span class="badge"></span></div>
+      <div class="q-prompt">두 소수 a, b가 <b>사실상 같은지</b> 안전하게 비교하려면?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false"><code>a == b</code></button>
+        <button class="opt" data-correct="true"><code>abs(a - b) &lt; EPSILON</code> (차이가 아주 작으면 같다고 본다)</button>
+        <button class="opt" data-correct="false"><code>a is b</code></button>
+        <button class="opt" data-correct="false"><code>round(a) == round(b)</code></button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> 소수는 오차가 있으니 "정확히 같은지"(<code>==</code>) 대신, 두 값의 <b>차이</b>(<code>abs(a - b)</code>)가 아주 작은 기준값(EPSILON, 예: <code>1e-9</code>)보다 작으면 "같다"고 판단해요. 이게 네가 과제3에서 쓴 방식이야.</div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">문제 4 <span class="tag">출력 예측</span><span class="badge"></span></div>
+      <div class="q-prompt">EPSILON 방식으로 비교하면? 출력은?</div>
+      <div class="code">
+<div class="ln">EPSILON = 1e-9</div>
+<div class="ln">a = 0.1 + 0.2</div>
+<div class="ln">b = 0.3</div>
+<div class="ln">print(abs(a - b) &lt; EPSILON)</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="true">True</button>
+        <button class="opt" data-correct="false">False</button>
+        <button class="opt" data-correct="false">0.0</button>
+        <button class="opt" data-correct="false">에러가 난다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: True.</span> a와 b의 차이는 약 0.00000000000000004로, EPSILON(0.000000001)보다 <b>훨씬 작아요</b>. 그래서 "사실상 같다"고 판단 → True. <code>==</code>로는 False였지만 EPSILON 방식으론 True — 이 한 끗 차이가 과제3의 핵심이에요.</div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="q" data-type="fill">
+      <div class="q-head">문제 5 <span class="tag">빈칸 · argmax</span><span class="badge"></span></div>
+      <div class="q-prompt">NPU가 <b>가장 점수 높은 후보의 위치(인덱스)</b>를 고르는 함수예요. 빈칸 2곳을 채우세요.</div>
+      <div class="code">
+<div class="ln">def argmax(scores):</div>
+<div class="ln">    best = <input class="blank js-input" data-answer="0" placeholder="_" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸1">   <span class="cmt"># 0번부터 비교 시작</span></div>
+<div class="ln">    for i in range(len(scores)):</div>
+<div class="ln">        if scores[i] &gt; scores[best]:</div>
+<div class="ln">            best = <input class="blank js-input" data-answer="i" placeholder="_" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸2"></div>
+<div class="ln">    return best</div>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 0, i.</span> 가장 큰 값의 <b>위치</b>를 찾는 argmax예요. ① best를 <code>0</code>번(첫 후보)으로 시작하고, ② 더 큰 값을 만나면 그 위치 <code>i</code>로 갱신. 끝까지 돌면 best엔 최댓값의 인덱스가 남아요. NPU가 "가장 점수 높은 후보"를 고르는 방식입니다.</div>
+    </div>
+
+    <!-- Q6 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">문제 6 <span class="tag">개념</span><span class="badge"></span></div>
+      <div class="q-prompt">최고 점수가 두 개 이상 <b>사실상 같을 때</b>(동점)를 감지하려면?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">그냥 <code>==</code>로 점수를 비교한다</button>
+        <button class="opt" data-correct="true"><code>abs(점수1 - 점수2) &lt; EPSILON</code>으로 비교한다</button>
+        <button class="opt" data-correct="false">정렬해서 맨 앞만 본다</button>
+        <button class="opt" data-correct="false">소수라서 동점은 생길 수 없다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> 동점 판정도 결국 <b>소수 비교</b>라, <code>==</code> 대신 EPSILON을 써서 "차이가 거의 없으면 동점"으로 처리해요. 문제 3~4와 완전히 같은 원리 — 과제3에서 동점 감지에 EPSILON을 쓴 이유입니다.</div>
+    </div>
+
+    <div class="btns">
+      <button id="grade" class="btn primary">채점하기</button>
+      <button id="reset" class="btn secondary">다시 풀기</button>
+      <button id="toggle" class="btn link">정답·해설 보기</button>
+    </div>
+
+    <div id="banner" class="banner" hidden></div>
+
+    <div class="foot">빈칸 정답은 대소문자·공백에 관계없이 채점돼요.</div>
+  </div>
+
+<script>
+  var questions = Array.prototype.slice.call(document.querySelectorAll('.q'));
+  var explainShown = false;
+  function norm(s){ return (s || '').replace(/\s+/g, '').toLowerCase(); }
+  function matches(inp){
+    var v = norm(inp.value);
+    return (inp.dataset.answer || '').split('|').some(function(a){ return norm(a) === v; });
+  }
+
+  questions.forEach(function(q){
+    var group = q.querySelector('.choices');
+    if(!group) return;
+    group.querySelectorAll('.opt').forEach(function(opt){
+      opt.addEventListener('click', function(){
+        group.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('sel','ok','bad'); });
+        opt.classList.add('sel');
+        q.classList.remove('ok','bad');
+        var b = q.querySelector('.badge'); if(b){ b.textContent=''; b.className='badge'; }
+      });
+    });
+  });
+
+  function qItems(q){
+    var group = q.querySelector('.choices');
+    if(group){
+      var sel = group.querySelector('.opt.sel');
+      var ok = !!sel && sel.dataset.correct === 'true';
+      return { correct: ok ? 1 : 0, total: 1 };
+    }
+    var inputs = Array.prototype.slice.call(q.querySelectorAll('.js-input'));
+    var c = 0;
+    inputs.forEach(function(inp){ if(matches(inp)) c++; });
+    return { correct: c, total: inputs.length };
+  }
+
+  function setExplain(on){
+    explainShown = on;
+    questions.forEach(function(q){ var ex = q.querySelector('.explain'); if(ex) ex.hidden = !on; });
+    document.getElementById('toggle').textContent = on ? '정답·해설 숨기기' : '정답·해설 보기';
+  }
+
+  function clearMarks(){
+    questions.forEach(function(q){
+      q.classList.remove('ok','bad');
+      var b = q.querySelector('.badge'); if(b){ b.textContent=''; b.className='badge'; }
+      q.querySelectorAll('.js-input').forEach(function(i){ i.classList.remove('ok','bad'); });
+      q.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('ok','bad'); });
+    });
+  }
+
+  document.getElementById('grade').addEventListener('click', function(){
+    clearMarks();
+    var totalCorrect = 0, totalItems = 0;
+    questions.forEach(function(q){
+      var s = qItems(q);
+      totalCorrect += s.correct; totalItems += s.total;
+      var full = s.total > 0 && s.correct === s.total;
+      q.classList.add(full ? 'ok' : 'bad');
+      var badge = q.querySelector('.badge');
+      if(badge){
+        if(s.total > 1){ badge.textContent = s.correct + ' / ' + s.total + ' 칸'; }
+        else { badge.textContent = full ? '✓ 정답' : '✗ 다시'; }
+        badge.className = 'badge ' + (full ? 'ok' : 'bad');
+      }
+      q.querySelectorAll('.js-input').forEach(function(inp){
+        inp.classList.add(matches(inp) ? 'ok' : 'bad');
+      });
+      var group = q.querySelector('.choices');
+      if(group){
+        group.querySelectorAll('.opt').forEach(function(opt){
+          if(opt.dataset.correct === 'true') opt.classList.add('ok');
+          else if(opt.classList.contains('sel')) opt.classList.add('bad');
+        });
+      }
+    });
+    setExplain(true);
+    var banner = document.getElementById('banner');
+    banner.hidden = false;
+    if(totalCorrect === totalItems){
+      banner.className = 'banner ok';
+      banner.textContent = '🎉 ' + totalItems + '칸 전부 정답! 부동소수점 감 잡았네요.';
+    } else {
+      banner.className = 'banner amber';
+      banner.textContent = '총 ' + totalItems + '칸 중 ' + totalCorrect + '개 정답 — 초록은 정답, 빨강은 다시 볼 칸이에요. 해설 보고 고쳐서 다시 채점해도 돼요.';
+    }
+  });
+
+  document.getElementById('toggle').addEventListener('click', function(){ setExplain(!explainShown); });
+
+  document.getElementById('reset').addEventListener('click', function(){
+    clearMarks();
+    questions.forEach(function(q){
+      q.querySelectorAll('.js-input').forEach(function(i){ i.value = ''; });
+      q.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('sel'); });
+    });
+    setExplain(false);
+    document.getElementById('banner').hidden = true;
+  });
+</script>
+</body>
+</html>
