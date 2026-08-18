@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>과제3 데일리 퀴즈 ② (난이도 중) — 판정 · 정규화 · 복잡도</title>
+<style>
+  :root{
+    --page-bg:#eceef5; --card:#ffffff; --ink:#1f2430; --sub:#5b6472;
+    --accent:#4f46e5; --accent-dark:#4338ca;
+    --code-bg:#1b1e2b; --code-ink:#e6e9f0; --code-cmt:#6b7488; --code-str:#9ece6a;
+    --ok:#16a34a; --ok-bg:rgba(22,163,74,.16);
+    --bad:#dc2626; --bad-bg:rgba(220,38,38,.16);
+    --blank-border:#5b6479; --blank-bg:rgba(148,163,184,.16);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--page-bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",Roboto,sans-serif;
+    padding:24px 14px;}
+  .card{max-width:720px; margin:0 auto; background:var(--card);
+    border-radius:18px; padding:26px 22px; box-shadow:0 8px 30px rgba(20,25,45,.08);}
+  .eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.5px; font-weight:700; color:var(--accent); letter-spacing:.4px;}
+  h1{font-size:22px; font-weight:800; margin:8px 0 6px; line-height:1.3;}
+  .intro{font-size:14.5px; line-height:1.7; color:var(--sub); margin:0 0 6px;}
+  .intro b{color:var(--ink);}
+  .code{background:var(--code-bg); border-radius:12px; padding:14px 14px; overflow-x:auto;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; margin-top:4px;}
+  .ln{white-space:pre; line-height:25px; color:var(--code-ink);}
+  .cmt{color:var(--code-cmt); font-style:italic;}
+  .str{color:var(--code-str);}
+  .blank{width:12ch; font-family:inherit; font-size:inherit; color:var(--code-ink);
+    background:var(--blank-bg); border:1.5px solid var(--blank-border); border-radius:6px;
+    padding:0 6px; margin:0 2px; text-align:center;}
+  .blank::placeholder{color:#6b7488;}
+  .blank:focus{outline:none; border-color:#818cf8; box-shadow:0 0 0 2px rgba(129,140,248,.30);}
+  .blank.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .blank.bad{border-color:var(--bad); background:var(--bad-bg);}
+  .ansrow{margin-top:10px; display:flex; align-items:center; gap:8px; font-size:14px; color:var(--ink); flex-wrap:wrap;}
+  .ansrow code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--ink);}
+  .ans{width:16ch; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:14px;
+    color:var(--ink); background:#fff; border:1.5px solid var(--blank-border); border-radius:8px;
+    padding:5px 8px; text-align:center;}
+  .ans:focus{outline:none; border-color:#818cf8; box-shadow:0 0 0 2px rgba(129,140,248,.30);}
+  .ans.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .ans.bad{border-color:var(--bad); background:var(--bad-bg);}
+  .q{border:1px solid #e7e9f0; border-radius:14px; padding:16px; margin-top:12px; background:#fff;}
+  .q.ok{border-color:#bbf7d0; background:#f6fef9;}
+  .q.bad{border-color:#fecaca; background:#fffafa;}
+  .q-head{display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:800; color:var(--ink); margin-bottom:8px;}
+  .tag{font-size:11.5px; font-weight:700; color:var(--accent-dark); background:#eef1f8; padding:2px 9px; border-radius:999px;}
+  .badge{margin-left:auto; font-size:13px; font-weight:800;}
+  .badge.ok{color:var(--ok);} .badge.bad{color:var(--bad);}
+  .q-prompt{font-size:14px; line-height:1.65; color:var(--ink); margin-bottom:4px;}
+  .q-prompt code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+  .choices{display:flex; flex-direction:column; gap:8px; margin-top:10px;}
+  .opt{text-align:left; font-size:14px; padding:10px 12px; border:1.5px solid #d7dbe6; border-radius:10px;
+    background:#fff; cursor:pointer; color:var(--ink); font-family:inherit;}
+  .opt:hover{border-color:#b9c0d4;}
+  .opt.sel{border-color:var(--accent); background:#eef0ff;}
+  .opt.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .opt.bad{border-color:var(--bad); background:var(--bad-bg);}
+  .opt:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .opt code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+  .explain{margin-top:12px; padding:12px 14px; background:#f1f5ff; border:1px solid #dfe6fb; border-radius:10px;
+    font-size:13.5px; line-height:1.7; color:var(--sub);}
+  .explain b{color:var(--ink);}
+  .explain .a{font-weight:800; color:var(--accent-dark);}
+  .explain code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--ink);}
+  .btns{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:20px;}
+  .btn{font-size:15px; border-radius:10px; cursor:pointer; padding:11px 20px;}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .btn.primary{background:var(--accent); color:#fff; border:none; font-weight:700;}
+  .btn.secondary{background:#eceef5; color:var(--ink); border:1px solid #d7dbe6; font-weight:600;}
+  .btn.link{background:transparent; color:var(--accent); border:none; font-weight:600; padding:11px 6px; text-decoration:underline;}
+  .banner{margin-top:16px; padding:12px 16px; border-radius:10px; font-size:14.5px; font-weight:600;}
+  .banner.ok{background:#dcfce7; color:#166534;}
+  .banner.amber{background:#fef3c7; color:#b45309;}
+  .foot{margin-top:18px; font-size:12.5px; color:var(--code-cmt); text-align:center;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="eyebrow"># 과제3 · 데일리 퀴즈 ② (난이도 중)</div>
+    <h1>⚙️ 판정 로직 · 라벨 정규화 · O(N²)</h1>
+    <p class="intro">난이도 하에서 감을 잡았다면, 이번엔 <b>실제 구현에서 걸리는 지점</b>이에요. 판정 함수의 순서, 정규화를 빠뜨렸을 때 생기는 FAIL, 이중 for문의 복잡도까지. <b>7문제</b>(총 10칸)입니다.</p>
+
+    <!-- Q1 -->
+    <div class="q" data-type="fill">
+      <div class="q-head">문제 1 <span class="tag">빈칸 · decide</span><span class="badge"></span></div>
+      <div class="q-prompt">두 점수를 받아 판정하는 함수예요. 빈칸 3곳을 채우세요.</div>
+      <div class="code">
+<div class="ln">EPSILON = 1e-9</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">def decide(cross, x):</div>
+<div class="ln">    if <input class="blank js-input" data-answer="abs" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸1">(cross - x) &lt; <input class="blank js-input" data-answer="EPSILON" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸2">:</div>
+<div class="ln">        return <span class="str">"UNDECIDED"</span></div>
+<div class="ln">    return <span class="str">"CROSS"</span> if cross &gt; x <input class="blank js-input" data-answer="else" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸3"> <span class="str">"X"</span></div>
+      </div>
+      <div class="explain" hidden><span class="a">정답: abs, EPSILON, else.</span> ① 차이의 <b>절댓값</b>을 봐야 해요. cross가 작을 수도 있으니 <code>abs()</code> 없이 그냥 빼면 음수일 때 항상 조건이 참이 돼버립니다. ② 기준값은 상수 <code>EPSILON</code>. ③ 삼항식 <code>A if 조건 else B</code>. 동점 검사를 <b>먼저</b> 하는 게 포인트 — 나중에 하면 이미 CROSS/X로 갈려버려요.</div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">문제 2 <span class="tag">순서</span><span class="badge"></span></div>
+      <div class="q-prompt">만약 <code>decide()</code>에서 동점(EPSILON) 검사를 <b>맨 마지막</b>으로 옮기면?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">결과는 똑같다</button>
+        <button class="opt" data-correct="true">동점인데도 CROSS나 X로 판정돼 UNDECIDED가 안 나온다</button>
+        <button class="opt" data-correct="false">항상 UNDECIDED만 나온다</button>
+        <button class="opt" data-correct="false">에러가 난다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> <code>cross > x</code> 비교는 아주 미세한 차이도 크다/작다로 갈라버려요. 0.9와 0.8999999999도 <code>&gt;</code>로 보면 엄연히 크니까 CROSS가 나옵니다. 그래서 <b>동점 검사를 먼저</b> 해서 걸러낸 다음에 크기 비교를 해야 UNDECIDED가 제대로 나와요. 조건문은 <b>위에서부터</b> 검사되니 순서가 곧 로직입니다.</div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">문제 3 <span class="tag">출력 예측</span><span class="badge"></span></div>
+      <div class="q-prompt">정규화를 <b>빠뜨린</b> 비교예요. 출력은?</div>
+      <div class="code">
+<div class="ln">result = <span class="str">"CROSS"</span>       <span class="cmt"># 판정 결과</span></div>
+<div class="ln">expected = <span class="str">" Cross "</span>   <span class="cmt"># JSON 속 정답</span></div>
+<div class="ln">print(result == expected)</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">True</button>
+        <button class="opt" data-correct="true">False</button>
+        <button class="opt" data-correct="false">에러가 난다</button>
+        <button class="opt" data-correct="false">None</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: False.</span> 사람 눈엔 같은 답이지만 문자열로는 <b>완전히 다른 값</b>이에요 — 앞뒤 공백도 있고 대소문자도 다르니까요. 맞는 답인데 FAIL로 집계되는 이유가 이겁니다. <code>expected.strip().upper()</code>로 정규화하면 "CROSS"가 되어 True가 돼요.</div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="q" data-type="fill">
+      <div class="q-head">문제 4 <span class="tag">빈칸 · 집계</span><span class="badge"></span></div>
+      <div class="q-prompt">모드2에서 PASS/FAIL을 집계하는 부분이에요. 빈칸 2곳을 채우세요.</div>
+      <div class="code">
+<div class="ln">passed = 0</div>
+<div class="ln">for key, case in patterns.items():</div>
+<div class="ln">    got = decide(cross_score, x_score)</div>
+<div class="ln">    want = normalize_label(case[<span class="str">"expected"</span>])</div>
+<div class="ln">    if got == <input class="blank js-input" data-answer="want" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸1">:</div>
+<div class="ln">        passed += 1</div>
+<div class="ln">        print(key, <span class="str">"PASS"</span>)</div>
+<div class="ln">    else:</div>
+<div class="ln">        print(key, <span class="str">"FAIL"</span>)</div>
+<div class="ln">print(f<span class="str">"{passed} / {<input class="blank js-input" data-answer="len(patterns)" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸2">}"</span>)</div>
+      </div>
+      <div class="explain" hidden><span class="a">정답: want, len(patterns).</span> ① 정규화를 거친 정답 <code>want</code>와 비교해야 해요 — 원본 <code>case["expected"]</code>와 비교하면 문제 3처럼 표기 차이로 FAIL이 납니다. ② 전체 케이스 수는 <code>len(patterns)</code>. 숫자 8을 직접 적으면 데이터가 늘어날 때마다 고쳐야 하니, <b>데이터에서 세는</b> 게 맞아요.</div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">문제 5 <span class="tag">복잡도</span><span class="badge"></span></div>
+      <div class="q-prompt">MAC 연산에서 N이 5 → 25로 <b>5배</b> 커지면, 연산 횟수는 몇 배?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">5배</button>
+        <button class="opt" data-correct="true">25배</button>
+        <button class="opt" data-correct="false">10배</button>
+        <button class="opt" data-correct="false">그대로</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 25배.</span> 이중 for문이라 칸 수는 N×N. N=5면 25칸, N=25면 625칸이니 <code>625 / 25 = 25배</code>예요. O(N²)에서 N이 k배가 되면 연산은 <b>k²배</b>가 된다는 뜻 — 5배 커지면 25배입니다.</div>
+    </div>
+
+    <!-- Q6 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">문제 6 <span class="tag">입력 검증</span><span class="badge"></span></div>
+      <div class="q-prompt">사용자가 <code>"1 2 삼"</code>을 입력했어요. <code>float("삼")</code>에서 발생하는 예외는?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">TypeError</button>
+        <button class="opt" data-correct="true">ValueError</button>
+        <button class="opt" data-correct="false">KeyError</button>
+        <button class="opt" data-correct="false">예외 없이 0.0이 된다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: ValueError.</span> <code>float()</code>는 <b>타입은 맞지만(문자열) 값이 숫자로 해석 불가</b>할 때 ValueError를 던져요. <code>int("abc")</code>와 같은 상황입니다. 그래서 <code>read_grid()</code>에서 <code>except ValueError:</code>로 잡아 "숫자를 입력하세요"라고 안내하고 다시 받는 거예요.</div>
+    </div>
+
+    <!-- Q7 -->
+    <div class="q" data-type="fill">
+      <div class="q-head">문제 7 <span class="tag">단답</span><span class="badge"></span></div>
+      <div class="q-prompt">모드2에서 <code>data.json</code>을 읽을 때, 파일이 <b>없을 경우</b> 발생하는 예외 이름은?</div>
+      <div class="ansrow"><input class="ans js-input" data-answer="FileNotFoundError" placeholder="?" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="문제7 단답" style="width:22ch"></div>
+      <div class="explain" hidden><span class="a">정답: FileNotFoundError.</span> <code>open("data.json")</code> 했는데 그 경로에 파일이 없으면 FileNotFoundError가 나요. 파일이 있어도 <b>내용이 깨진 JSON</b>이면 <code>json.JSONDecodeError</code>가 따로 발생하니, 실무에선 둘 다 잡아 안내 메시지를 띄웁니다.</div>
+    </div>
+
+    <div class="btns">
+      <button id="grade" class="btn primary">채점하기</button>
+      <button id="reset" class="btn secondary">다시 풀기</button>
+      <button id="toggle" class="btn link">정답·해설 보기</button>
+    </div>
+    <div id="banner" class="banner" hidden></div>
+    <div class="foot">빈칸·단답 정답은 대소문자·공백에 관계없이 채점돼요.</div>
+  </div>
+
+<script>
+  var questions = Array.prototype.slice.call(document.querySelectorAll('.q'));
+  var explainShown = false;
+  function norm(s){ return (s || '').replace(/\s+/g, '').toLowerCase(); }
+  function matches(inp){
+    var v = norm(inp.value);
+    return (inp.dataset.answer || '').split('|').some(function(a){ return norm(a) === v; });
+  }
+  questions.forEach(function(q){
+    var group = q.querySelector('.choices');
+    if(!group) return;
+    group.querySelectorAll('.opt').forEach(function(opt){
+      opt.addEventListener('click', function(){
+        group.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('sel','ok','bad'); });
+        opt.classList.add('sel');
+        q.classList.remove('ok','bad');
+        var b = q.querySelector('.badge'); if(b){ b.textContent=''; b.className='badge'; }
+      });
+    });
+  });
+  function qItems(q){
+    var group = q.querySelector('.choices');
+    if(group){
+      var sel = group.querySelector('.opt.sel');
+      return { correct: (!!sel && sel.dataset.correct === 'true') ? 1 : 0, total: 1 };
+    }
+    var inputs = Array.prototype.slice.call(q.querySelectorAll('.js-input'));
+    var c = 0;
+    inputs.forEach(function(inp){ if(matches(inp)) c++; });
+    return { correct: c, total: inputs.length };
+  }
+  function setExplain(on){
+    explainShown = on;
+    questions.forEach(function(q){ var ex = q.querySelector('.explain'); if(ex) ex.hidden = !on; });
+    document.getElementById('toggle').textContent = on ? '정답·해설 숨기기' : '정답·해설 보기';
+  }
+  function clearMarks(){
+    questions.forEach(function(q){
+      q.classList.remove('ok','bad');
+      var b = q.querySelector('.badge'); if(b){ b.textContent=''; b.className='badge'; }
+      q.querySelectorAll('.js-input').forEach(function(i){ i.classList.remove('ok','bad'); });
+      q.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('ok','bad'); });
+    });
+  }
+  document.getElementById('grade').addEventListener('click', function(){
+    clearMarks();
+    var totalCorrect = 0, totalItems = 0;
+    questions.forEach(function(q){
+      var s = qItems(q);
+      totalCorrect += s.correct; totalItems += s.total;
+      var full = s.total > 0 && s.correct === s.total;
+      q.classList.add(full ? 'ok' : 'bad');
+      var badge = q.querySelector('.badge');
+      if(badge){
+        badge.textContent = (s.total > 1) ? (s.correct + ' / ' + s.total + ' 칸') : (full ? '✓ 정답' : '✗ 다시');
+        badge.className = 'badge ' + (full ? 'ok' : 'bad');
+      }
+      q.querySelectorAll('.js-input').forEach(function(inp){
+        inp.classList.add(matches(inp) ? 'ok' : 'bad');
+      });
+      var group = q.querySelector('.choices');
+      if(group){
+        group.querySelectorAll('.opt').forEach(function(opt){
+          if(opt.dataset.correct === 'true') opt.classList.add('ok');
+          else if(opt.classList.contains('sel')) opt.classList.add('bad');
+        });
+      }
+    });
+    setExplain(true);
+    var banner = document.getElementById('banner');
+    banner.hidden = false;
+    if(totalCorrect === totalItems){
+      banner.className = 'banner ok';
+      banner.textContent = '🎉 ' + totalItems + '칸 전부 정답! 구현 지점까지 확실히 잡았네요.';
+    } else {
+      banner.className = 'banner amber';
+      banner.textContent = '총 ' + totalItems + '칸 중 ' + totalCorrect + '개 정답 — 초록은 정답, 빨강은 다시 볼 칸이에요. 해설 보고 고쳐서 다시 채점해도 돼요.';
+    }
+  });
+  document.getElementById('toggle').addEventListener('click', function(){ setExplain(!explainShown); });
+  document.getElementById('reset').addEventListener('click', function(){
+    clearMarks();
+    questions.forEach(function(q){
+      q.querySelectorAll('.js-input').forEach(function(i){ i.value = ''; });
+      q.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('sel'); });
+    });
+    setExplain(false);
+    document.getElementById('banner').hidden = true;
+  });
+</script>
+</body>
+</html>
