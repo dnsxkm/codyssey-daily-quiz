@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>파이썬 구현 퀴즈 — 도서관 관리 프로그램 완성하기</title>
+<style>
+  :root{
+    --page-bg:#eceef5; --card:#ffffff; --ink:#1f2430; --sub:#5b6472;
+    --accent:#4f46e5; --accent-dark:#4338ca;
+    --code-bg:#1b1e2b; --code-ink:#e6e9f0; --code-cmt:#6b7488; --code-str:#9ece6a;
+    --code-kw:#c4b5fd; --code-num:#fca5a5;
+    --ok:#16a34a; --ok-bg:rgba(22,163,74,.16);
+    --bad:#dc2626; --bad-bg:rgba(220,38,38,.16);
+    --blank-border:#5b6479; --blank-bg:rgba(148,163,184,.16);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--page-bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",Roboto,sans-serif;
+    padding:24px 14px;}
+  .card{max-width:760px; margin:0 auto; background:var(--card);
+    border-radius:18px; padding:26px 22px; box-shadow:0 8px 30px rgba(20,25,45,.08);}
+  .eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.5px; font-weight:700; color:var(--accent); letter-spacing:.4px;}
+  h1{font-size:22px; font-weight:800; margin:8px 0 6px; line-height:1.3;}
+  .intro{font-size:14.5px; line-height:1.7; color:var(--sub); margin:0 0 14px;}
+  .intro b{color:var(--ink);}
+
+  .spec{background:#f1f5ff; border:1px solid #dfe6fb; border-radius:12px; padding:14px 16px; margin-bottom:16px;}
+  .spec-h{font-size:14px; font-weight:800; color:var(--ink); margin-bottom:6px;}
+  .spec ul{margin:0; padding-left:18px; font-size:13.5px; line-height:1.75; color:var(--sub);}
+  .spec code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--ink);}
+
+  .filename{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12.5px;
+    color:var(--code-cmt); background:#14161f; border-radius:12px 12px 0 0; padding:9px 16px; margin-top:6px;}
+  .code{background:var(--code-bg); border-radius:0 0 12px 12px; padding:14px 16px; overflow-x:auto;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px;}
+  .ln{white-space:pre; line-height:26px; color:var(--code-ink);}
+  .cmt{color:var(--code-cmt); font-style:italic;}
+  .str{color:var(--code-str);}
+  .kw{color:var(--code-kw);}
+  .sec{color:var(--accent); font-weight:700;}
+
+  .blank{width:11ch; font-family:inherit; font-size:inherit; color:var(--code-ink);
+    background:var(--blank-bg); border:1.5px solid var(--blank-border); border-radius:6px;
+    padding:0 5px; margin:0 2px; text-align:center;}
+  .blank::placeholder{color:#6b7488;}
+  .blank:focus{outline:none; border-color:#818cf8; box-shadow:0 0 0 2px rgba(129,140,248,.30);}
+  .blank.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .blank.bad{border-color:var(--bad); background:var(--bad-bg);}
+  .bn{display:inline-block; min-width:22px; font-size:11px; color:var(--accent); font-weight:700;}
+
+  .btns{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:20px;}
+  .btn{font-size:15px; border-radius:10px; cursor:pointer; padding:11px 20px;}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .btn.primary{background:var(--accent); color:#fff; border:none; font-weight:700;}
+  .btn.secondary{background:#eceef5; color:var(--ink); border:1px solid #d7dbe6; font-weight:600;}
+  .btn.link{background:transparent; color:var(--accent); border:none; font-weight:600; padding:11px 6px; text-decoration:underline;}
+
+  .banner{margin-top:16px; padding:12px 16px; border-radius:10px; font-size:14.5px; font-weight:600;}
+  .banner.ok{background:#dcfce7; color:#166534;}
+  .banner.amber{background:#fef3c7; color:#b45309;}
+
+  .key{margin-top:18px; display:none; flex-direction:column; gap:9px;}
+  .key.show{display:flex;}
+  .kc{background:#fbfbfd; border:1px solid #e7e9f0; border-radius:12px; padding:13px 15px;}
+  .kc.ok{border-color:#bbf7d0; background:#f6fef9;}
+  .kc.bad{border-color:#fecaca; background:#fffafa;}
+  .kh{font-size:14px; color:var(--ink);}
+  .kh b{font-weight:800;}
+  .chip{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; background:#eef1f8;
+    color:var(--accent-dark); padding:2px 7px; border-radius:6px; font-weight:700; font-size:13px;}
+  .kb{margin-top:7px; font-size:13.5px; line-height:1.7; color:var(--sub);}
+  .kb code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--ink);}
+  .kb b{color:var(--ink);}
+
+  .foot{margin-top:18px; font-size:12.5px; color:var(--code-cmt); text-align:center;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="eyebrow"># 파이썬 · 구현 퀴즈</div>
+    <h1>📚 도서관 관리 프로그램 완성하기</h1>
+    <p class="intro">이번엔 짧은 조각이 아니라 <b>하나의 완성된 프로그램</b>이에요. 위에서 아래로 읽으면 실제로 돌아가는 코드이고, 빈칸 <b>16곳</b>이 흩어져 있습니다. 앞뒤 문맥과 주석을 단서로 채워보세요 — <code>import</code>, <code>class</code>, <code>def</code>가 전부 들어갑니다.</p>
+
+    <div class="spec">
+      <div class="spec-h">📋 요구사항</div>
+      <ul>
+        <li>책을 여러 권 등록하고, 남은 재고를 셀 수 있다</li>
+        <li>회원은 최대 <code>3권</code>까지 대출 가능 (재고 없으면 실패)</li>
+        <li>빌린 적 없는 책을 반납하면 예외를 던진다</li>
+        <li>많이 빌린 순으로 순위를 매겨 출력한다</li>
+        <li>상태를 JSON 파일로 저장하고 다시 불러온다</li>
+      </ul>
+    </div>
+
+    <div class="filename">library.py</div>
+    <div class="code">
+<div class="ln"><span class="cmt"># ── 필요한 라이브러리 불러오기 ──</span></div>
+<div class="ln"><input class="blank js-input" data-answer="import" placeholder="_____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸 1"> json          <span class="cmt"># 1) 파일 저장/불러오기</span></div>
+<div class="ln">import <input class="blank js-input" data-answer="random" placeholder="______" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸 2">        <span class="cmt"># 2) 무작위 추천에 사용</span></div>
+<div class="ln"><span class="cmt"># ─────────────────────────────</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln">&nbsp;</div>
+<div class="ln"><input class="blank js-input" data-answer="class" placeholder="_____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸 3"> Library:          <span class="cmt"># 3)</span></div>
+<div class="ln">    MAX_BORROW = 3               <span class="cmt"># 모든 도서관이 공유하는 규칙</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln">    def <input class="blank js-input" data-answer="__init__" placeholder="________" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸 4">(self, name):   <span class="cmt"># 4) 객체 생성 시 자동 실행</span></div>
+<div class="ln">        self.name = <input class="blank js-input" data-answer="name" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸 5"></div>
+<div class="ln">        self.books = []          <span class="cmt"># 서가에 꽂힌 책 제목들</span></div>
+<div class="ln">        self.borrowed = {}       <span class="cmt"># {회원: [빌린 책들]}</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln">    def add_book(self, title, copies=1):</div>
+<div class="ln">        for _ in range(copies):</div>
+<div class="ln">            self.books.append(<input class="blank js-input" data-answer="title" placeholder="_____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸 6">)   <span class="cmt"># 6)</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln">    def available(self, title):</div>
+<div class="ln">        <span class="cmt"># 서가에 같은 제목이 몇 권 있는지</span></div>
+<div class="ln">        return self.books.<input class="blank js-input" data-answer="count" placeholder="_____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸 7">(title)   <span class="cmt"># 7)</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln">    def borrow(self, member, title):</div>
+<div class="ln">        if self.available(title) == 0:</div>
+<div class="ln">            return <input class="blank js-input" data-answer="False" placeholder="_____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸 8">        <span class="cmt"># 8) 재고 없음</span></div>
+<div class="ln">        <span class="cmt"># 처음 빌리는 회원이면 빈 목록으로 시작</span></div>
+<div class="ln">        taken = self.borrowed.<input class="blank js-input" data-answer="get" placeholder="___" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸 9">(member, [])   <span class="cmt"># 9)</span></div>
+<div class="ln">        if len(taken) &gt;= Library.MAX_BORROW:      <span class="cmt"># 한도 초과</span></div>
+<div class="ln">            return False</div>
+<div class="ln">        self.books.<input class="blank js-input" data-answer="remove" placeholder="______" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸 10">(title)      <span class="cmt"># 10) 서가에서 빼기</span></div>
+<div class="ln">        taken.append(title)</div>
+<div class="ln">        self.borrowed[<input class="blank js-input" data-answer="member" placeholder="______" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸 11">] = taken   <span class="cmt"># 11) 이 회원 칸에 반영</span></div>
+<div class="ln">        return True</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">    def give_back(self, member, title):</div>
+<div class="ln">        taken = self.borrowed.get(member, [])</div>
+<div class="ln">        if title not in taken:                   <span class="cmt"># 빌린 적 없다면</span></div>
+<div class="ln">            <input class="blank js-input" data-answer="raise" placeholder="_____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸 12"> ValueError(<span class="str">"빌린 적 없는 책입니다."</span>)   <span class="cmt"># 12)</span></div>
+<div class="ln">        taken.remove(title)</div>
+<div class="ln">        self.books.append(title)</div>
+<div class="ln">        return True</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">    def top_members(self):</div>
+<div class="ln">        <span class="cmt"># 많이 빌린 순(내림차순)으로 정렬</span></div>
+<div class="ln">        return <input class="blank js-input" data-answer="sorted" placeholder="______" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸 13">(self.borrowed.items(),   <span class="cmt"># 13)</span></div>
+<div class="ln">                      key=lambda p: len(p[1]),</div>
+<div class="ln">                      reverse=True)</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">    def report(self):</div>
+<div class="ln">        <span class="cmt"># 1위부터 번호를 매겨 출력</span></div>
+<div class="ln">        for rank, (member, titles) in enumerate(self.top_members(), start=<input class="blank js-input" data-answer="1" placeholder="_" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸 14">):   <span class="cmt"># 14)</span></div>
+<div class="ln">            print(f<span class="str">"{rank}위: {member} ({len(titles)}권)"</span>)</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">    def recommend(self):</div>
+<div class="ln">        unique = list(<input class="blank js-input" data-answer="set" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸 15">(self.books))   <span class="cmt"># 15) 중복 제목 제거</span></div>
+<div class="ln">        <span class="cmt"># 책이 있으면 그중 하나를 무작위로</span></div>
+<div class="ln">        return random.choice(unique) if unique else None</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">    def save(self, path):</div>
+<div class="ln">        data = {<span class="str">"name"</span>: self.name, <span class="str">"books"</span>: self.books,</div>
+<div class="ln">                <span class="str">"borrowed"</span>: self.borrowed}</div>
+<div class="ln">        with open(path, <span class="str">"w"</span>, encoding=<span class="str">"utf-8"</span>) as f:</div>
+<div class="ln">            json.dump(data, f, ensure_ascii=False)</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">    def load(self, path):</div>
+<div class="ln">        try:</div>
+<div class="ln">            with open(path, <span class="str">"r"</span>, encoding=<span class="str">"utf-8"</span>) as f:</div>
+<div class="ln">                data = json.load(f)</div>
+<div class="ln">        except (<input class="blank js-input" data-answer="FileNotFoundError" placeholder="_______________" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸 16">, json.JSONDecodeError):   <span class="cmt"># 16) 파일이 없을 때</span></div>
+<div class="ln">            return False</div>
+<div class="ln">        self.books = data[<span class="str">"books"</span>]</div>
+<div class="ln">        self.borrowed = data[<span class="str">"borrowed"</span>]</div>
+<div class="ln">        return True</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">&nbsp;</div>
+<div class="ln"><span class="cmt"># ── 실행 ──</span></div>
+<div class="ln">lib = Library(<span class="str">"코디세이 도서관"</span>)</div>
+<div class="ln">lib.add_book(<span class="str">"파이썬 입문"</span>, 2)</div>
+<div class="ln">lib.add_book(<span class="str">"알고리즘"</span>)</div>
+<div class="ln">lib.borrow(<span class="str">"민수"</span>, <span class="str">"파이썬 입문"</span>)</div>
+<div class="ln">lib.borrow(<span class="str">"영희"</span>, <span class="str">"알고리즘"</span>)</div>
+<div class="ln">lib.borrow(<span class="str">"민수"</span>, <span class="str">"파이썬 입문"</span>)</div>
+<div class="ln">lib.report()</div>
+<div class="ln"><span class="cmt"># 1위: 민수 (2권)</span></div>
+<div class="ln"><span class="cmt"># 2위: 영희 (1권)</span></div>
+    </div>
+
+    <div class="btns">
+      <button id="grade" class="btn primary">채점하기</button>
+      <button id="reset" class="btn secondary">다시 풀기</button>
+      <button id="toggle" class="btn link">정답·해설 보기</button>
+    </div>
+
+    <div id="banner" class="banner" hidden></div>
+
+    <div id="key" class="key">
+      <div class="kc" data-n="1"><div class="kh"><b>1. </b><code class="chip">import</code></div><div class="kb">라이브러리를 통째로 불러오는 키워드. 이렇게 부르면 이후 <code>json.dump()</code>처럼 <b>모듈 이름을 앞에 붙여</b> 씁니다.</div></div>
+      <div class="kc" data-n="2"><div class="kh"><b>2. </b><code class="chip">random</code></div><div class="kb">무작위 추천에 쓰이는 표준 라이브러리. 아래 <code>random.choice(...)</code>에서 실제로 사용되니, 그 이름을 보고 역추적할 수 있어요.</div></div>
+      <div class="kc" data-n="3"><div class="kh"><b>3. </b><code class="chip">class</code></div><div class="kb">객체를 찍어내는 <b>틀</b>을 정의하는 키워드. 이 틀로 <code>Library("코디세이 도서관")</code>처럼 도서관 객체를 만듭니다.</div></div>
+      <div class="kc" data-n="4"><div class="kh"><b>4. </b><code class="chip">__init__</code></div><div class="kb">객체가 만들어질 때 <b>자동으로 한 번</b> 실행되는 생성자. 앞뒤로 밑줄 2개씩입니다. 여기서 객체의 초기 상태를 준비해요.</div></div>
+      <div class="kc" data-n="5"><div class="kh"><b>5. </b><code class="chip">name</code></div><div class="kb">밖에서 받은 <b>매개변수</b> name을 <code>self.name</code>에 저장하는 자리. 오른쪽에 <code>self.name</code>을 쓰면 아직 없는 값을 참조해 에러가 납니다. "받은 재료를 객체 주머니에 담는다"로 기억하세요.</div></div>
+      <div class="kc" data-n="6"><div class="kh"><b>6. </b><code class="chip">title</code></div><div class="kb">copies 횟수만큼 반복하며 <b>제목을</b> 서가에 추가. 반복 변수가 <code>_</code>인 이유는 "몇 번째인지는 안 쓰고 횟수만 필요"하기 때문이에요.</div></div>
+      <div class="kc" data-n="7"><div class="kh"><b>7. </b><code class="chip">count</code></div><div class="kb">리스트에서 같은 값이 <b>몇 개인지 세는</b> 메서드. 같은 책을 2권 넣었다면 <code>count("파이썬 입문")</code>은 2를 돌려줍니다. (<code>len()</code>은 전체 개수라 여기선 안 맞아요.)</div></div>
+      <div class="kc" data-n="8"><div class="kh"><b>8. </b><code class="chip">False</code></div><div class="kb">대출 실패를 알리는 값. 성공하면 True를 돌려주므로 호출한 쪽은 <code>if lib.borrow(...)</code>로 성공 여부를 판단할 수 있어요. 파이썬은 대문자 <b>False</b>입니다.</div></div>
+      <div class="kc" data-n="9"><div class="kh"><b>9. </b><code class="chip">get</code></div><div class="kb">딕셔너리에서 키가 <b>없을 때 기본값</b>을 돌려주는 메서드. <code>self.borrowed[member]</code>로 접근하면 처음 빌리는 회원에게 KeyError가 나지만, <code>get(member, [])</code>은 빈 목록을 줘서 안전합니다.</div></div>
+      <div class="kc" data-n="10"><div class="kh"><b>10. </b><code class="chip">remove</code></div><div class="kb">리스트에서 <b>그 값 하나를</b> 지우는 메서드. 책이 대출되면 서가에서 한 권 빠져야 하니까요. 같은 제목이 2권이면 하나만 지워집니다.</div></div>
+      <div class="kc" data-n="11"><div class="kh"><b>11. </b><code class="chip">member</code></div><div class="kb">갱신한 대출 목록을 <b>이 회원의 칸</b>에 다시 넣는 자리. 위에서 <code>get(member, [])</code>으로 꺼내온 목록에 책을 추가했으니, 같은 키로 되돌려놔야 딕셔너리에 반영돼요. 처음 빌리는 회원이면 이 줄에서 항목이 새로 생깁니다.</div></div>
+      <div class="kc" data-n="12"><div class="kh"><b>12. </b><code class="chip">raise</code></div><div class="kb">예외를 <b>직접 던지는</b> 키워드. 잘못된 요청을 조용히 넘기지 않고 즉시 알려서, 문제가 엉뚱한 곳에서 터지는 걸 막아요. 호출한 쪽은 <code>except ValueError:</code>로 받습니다.</div></div>
+      <div class="kc" data-n="13"><div class="kh"><b>13. </b><code class="chip">sorted</code></div><div class="kb">정렬된 <b>새 리스트를 돌려주는</b> 내장 함수. 딕셔너리에는 <code>.sort()</code>가 없고, <code>.sort()</code>는 리스트를 제자리에서 바꾸며 None을 반환하기 때문에 <code>return</code>과 함께 쓸 수 없어요. 그래서 여기선 <code>sorted</code>가 맞습니다.</div></div>
+      <div class="kc" data-n="14"><div class="kh"><b>14. </b><code class="chip">1</code></div><div class="kb"><code>enumerate</code>는 기본이 0부터라 그냥 두면 "0위"가 나와요. <code>start=1</code>을 줘야 1위부터 시작합니다.</div></div>
+      <div class="kc" data-n="15"><div class="kh"><b>15. </b><code class="chip">set</code></div><div class="kb">중복을 <b>자동으로 제거</b>하는 자료형. 같은 책이 2권 있어도 추천 후보엔 한 번만 나오게 하려는 거예요. <code>set</code>은 순서가 없어서 <code>list(...)</code>로 다시 감싼 뒤 <code>random.choice</code>에 넘깁니다.</div></div>
+      <div class="kc" data-n="16"><div class="kh"><b>16. </b><code class="chip">FileNotFoundError</code></div><div class="kb">저장 파일이 <b>아직 없을 때</b> 나는 예외. 처음 실행하면 파일이 없는 게 정상이라, 프로그램이 죽지 않고 False를 돌려주도록 잡아줍니다. 함께 적힌 <code>json.JSONDecodeError</code>는 파일은 있지만 <b>내용이 깨진</b> 경우예요 — 둘을 튜플로 묶어 한 번에 처리합니다.</div></div>
+    <div class="foot">정답은 대소문자·공백에 관계없이 채점돼요.</div>
+  </div>
+
+<script>
+  var inputs = Array.prototype.slice.call(document.querySelectorAll('.js-input'));
+  var keyCards = Array.prototype.slice.call(document.querySelectorAll('.kc'));
+  var graded = false, shown = false;
+  function norm(s){ return (s || '').replace(/\s+/g, ' ').trim().toLowerCase(); }
+  function matches(inp){
+    var v = norm(inp.value);
+    return (inp.dataset.answer || '').split('|').some(function(a){ return norm(a) === v; });
+  }
+  function paint(){
+    if(!graded) return;
+    inputs.forEach(function(inp){
+      var ok = matches(inp);
+      inp.classList.toggle('ok', ok);
+      inp.classList.toggle('bad', !ok);
+    });
+    keyCards.forEach(function(kc, i){
+      if(!inputs[i]) return;
+      var ok = matches(inputs[i]);
+      kc.classList.toggle('ok', ok);
+      kc.classList.toggle('bad', !ok);
+    });
+  }
+  function setKey(on){
+    shown = on;
+    document.getElementById('key').classList.toggle('show', on);
+    document.getElementById('toggle').textContent = on ? '정답·해설 숨기기' : '정답·해설 보기';
+  }
+  document.getElementById('grade').addEventListener('click', function(){
+    graded = true;
+    var n = inputs.filter(matches).length;
+    paint();
+    setKey(true);
+    var b = document.getElementById('banner');
+    b.hidden = false;
+    if(n === inputs.length){
+      b.className = 'banner ok';
+      b.textContent = '🎉 ' + inputs.length + '칸 전부 정답! 프로그램 하나를 통째로 완성했어요.';
+    } else {
+      b.className = 'banner amber';
+      b.textContent = '총 ' + inputs.length + '칸 중 ' + n + '개 정답 — 초록은 정답, 빨강은 다시 볼 칸이에요. 해설 보고 고쳐서 다시 채점해도 돼요.';
+    }
+  });
+  inputs.forEach(function(inp){ inp.addEventListener('input', paint); });
+  document.getElementById('toggle').addEventListener('click', function(){ setKey(!shown); });
+  document.getElementById('reset').addEventListener('click', function(){
+    graded = false;
+    inputs.forEach(function(i){ i.value=''; i.classList.remove('ok','bad'); });
+    keyCards.forEach(function(k){ k.classList.remove('ok','bad'); });
+    setKey(false);
+    document.getElementById('banner').hidden = true;
+  });
+</script>
+</body>
+</html>
