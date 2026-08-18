@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>과제3 데일리 퀴즈 ③ (난이도 상) — 설계 · 함정 · 성능</title>
+<style>
+  :root{
+    --page-bg:#eceef5; --card:#ffffff; --ink:#1f2430; --sub:#5b6472;
+    --accent:#4f46e5; --accent-dark:#4338ca;
+    --code-bg:#1b1e2b; --code-ink:#e6e9f0; --code-cmt:#6b7488; --code-str:#9ece6a;
+    --ok:#16a34a; --ok-bg:rgba(22,163,74,.16);
+    --bad:#dc2626; --bad-bg:rgba(220,38,38,.16);
+    --blank-border:#5b6479; --blank-bg:rgba(148,163,184,.16);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--page-bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",Roboto,sans-serif;
+    padding:24px 14px;}
+  .card{max-width:720px; margin:0 auto; background:var(--card);
+    border-radius:18px; padding:26px 22px; box-shadow:0 8px 30px rgba(20,25,45,.08);}
+  .eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.5px; font-weight:700; color:var(--accent); letter-spacing:.4px;}
+  h1{font-size:22px; font-weight:800; margin:8px 0 6px; line-height:1.3;}
+  .intro{font-size:14.5px; line-height:1.7; color:var(--sub); margin:0 0 6px;}
+  .intro b{color:var(--ink);}
+  .code{background:var(--code-bg); border-radius:12px; padding:14px 14px; overflow-x:auto;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; margin-top:4px;}
+  .ln{white-space:pre; line-height:25px; color:var(--code-ink);}
+  .cmt{color:var(--code-cmt); font-style:italic;}
+  .str{color:var(--code-str);}
+  .blank{width:12ch; font-family:inherit; font-size:inherit; color:var(--code-ink);
+    background:var(--blank-bg); border:1.5px solid var(--blank-border); border-radius:6px;
+    padding:0 6px; margin:0 2px; text-align:center;}
+  .blank::placeholder{color:#6b7488;}
+  .blank:focus{outline:none; border-color:#818cf8; box-shadow:0 0 0 2px rgba(129,140,248,.30);}
+  .blank.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .blank.bad{border-color:var(--bad); background:var(--bad-bg);}
+  .ansrow{margin-top:10px; display:flex; align-items:center; gap:8px; font-size:14px; color:var(--ink); flex-wrap:wrap;}
+  .ansrow code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--ink);}
+  .ans{width:16ch; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:14px;
+    color:var(--ink); background:#fff; border:1.5px solid var(--blank-border); border-radius:8px;
+    padding:5px 8px; text-align:center;}
+  .ans:focus{outline:none; border-color:#818cf8; box-shadow:0 0 0 2px rgba(129,140,248,.30);}
+  .ans.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .ans.bad{border-color:var(--bad); background:var(--bad-bg);}
+  .q{border:1px solid #e7e9f0; border-radius:14px; padding:16px; margin-top:12px; background:#fff;}
+  .q.ok{border-color:#bbf7d0; background:#f6fef9;}
+  .q.bad{border-color:#fecaca; background:#fffafa;}
+  .q-head{display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:800; color:var(--ink); margin-bottom:8px;}
+  .tag{font-size:11.5px; font-weight:700; color:var(--accent-dark); background:#eef1f8; padding:2px 9px; border-radius:999px;}
+  .badge{margin-left:auto; font-size:13px; font-weight:800;}
+  .badge.ok{color:var(--ok);} .badge.bad{color:var(--bad);}
+  .q-prompt{font-size:14px; line-height:1.65; color:var(--ink); margin-bottom:4px;}
+  .q-prompt code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+  .choices{display:flex; flex-direction:column; gap:8px; margin-top:10px;}
+  .opt{text-align:left; font-size:14px; padding:10px 12px; border:1.5px solid #d7dbe6; border-radius:10px;
+    background:#fff; cursor:pointer; color:var(--ink); font-family:inherit;}
+  .opt:hover{border-color:#b9c0d4;}
+  .opt.sel{border-color:var(--accent); background:#eef0ff;}
+  .opt.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .opt.bad{border-color:var(--bad); background:var(--bad-bg);}
+  .opt:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .opt code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+  .explain{margin-top:12px; padding:12px 14px; background:#f1f5ff; border:1px solid #dfe6fb; border-radius:10px;
+    font-size:13.5px; line-height:1.7; color:var(--sub);}
+  .explain b{color:var(--ink);}
+  .explain .a{font-weight:800; color:var(--accent-dark);}
+  .explain code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--ink);}
+  .btns{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:20px;}
+  .btn{font-size:15px; border-radius:10px; cursor:pointer; padding:11px 20px;}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .btn.primary{background:var(--accent); color:#fff; border:none; font-weight:700;}
+  .btn.secondary{background:#eceef5; color:var(--ink); border:1px solid #d7dbe6; font-weight:600;}
+  .btn.link{background:transparent; color:var(--accent); border:none; font-weight:600; padding:11px 6px; text-decoration:underline;}
+  .banner{margin-top:16px; padding:12px 16px; border-radius:10px; font-size:14.5px; font-weight:600;}
+  .banner.ok{background:#dcfce7; color:#166534;}
+  .banner.amber{background:#fef3c7; color:#b45309;}
+  .foot{margin-top:18px; font-size:12.5px; color:var(--code-cmt); text-align:center;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="eyebrow"># 과제3 · 데일리 퀴즈 ③ (난이도 상)</div>
+    <h1>🔬 설계 판단 · 숨은 함정 · 성능 측정</h1>
+    <p class="intro">이번엔 "돌아가게 만들기"를 넘어 <b>왜 그렇게 설계했는가</b>를 묻습니다. 상대 오차 vs 절대 오차, 필터 설계, 성능 측정의 함정, 데이터 설계까지. <b>7문제</b>(총 11칸) — 각오하고 푸세요.</p>
+
+    <!-- Q1 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">문제 1 <span class="tag">EPSILON 심화</span><span class="badge"></span></div>
+      <div class="q-prompt">고정 EPSILON(<code>1e-9</code>) 방식의 <b>한계</b>로 옳은 것은?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">값이 작을수록 오판이 잦아진다</button>
+        <button class="opt" data-correct="true">값이 아주 커지면(예: 1e12) 실제 오차가 EPSILON보다 커져서 동점을 놓칠 수 있다</button>
+        <button class="opt" data-correct="false">정수 비교에서도 실패한다</button>
+        <button class="opt" data-correct="false">한계가 없다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> 부동소수점 오차는 <b>값의 크기에 비례</b>해서 커져요. 1e12쯤 되면 오차 자체가 1e-9보다 훨씬 커져서, 사실상 같은 값인데도 "차이가 EPSILON보다 크다"며 동점으로 안 봅니다. 그래서 범용 비교에는 <b>상대 오차</b>를 쓰거나 <code>math.isclose(a, b, rel_tol=1e-9)</code>를 씁니다. 과제3은 점수 범위가 작아 고정 EPSILON으로 충분하지만, <b>한계를 알고 선택하는 것</b>과 모르고 쓰는 건 달라요.</div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="q" data-type="fill">
+      <div class="q-head">문제 2 <span class="tag">빈칸 · 필터 생성</span><span class="badge"></span></div>
+      <div class="q-prompt">N×N Cross 필터(가운데 행·열이 1, 나머지 0)를 만드는 함수예요. 빈칸 2곳.</div>
+      <div class="code">
+<div class="ln">def make_cross(n):</div>
+<div class="ln">    mid = n <input class="blank js-input" data-answer="//" placeholder="__" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸1"> 2</div>
+<div class="ln">    grid = []</div>
+<div class="ln">    for i in range(n):</div>
+<div class="ln">        row = []</div>
+<div class="ln">        for j in range(n):</div>
+<div class="ln">            hit = (i == mid <input class="blank js-input" data-answer="or" placeholder="__" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸2"> j == mid)</div>
+<div class="ln">            row.append(1.0 if hit else 0.0)</div>
+<div class="ln">        grid.append(row)</div>
+<div class="ln">    return grid</div>
+      </div>
+      <div class="explain" hidden><span class="a">정답: //, or.</span> ① <code>//</code>는 <b>정수 나눗셈</b>. <code>n / 2</code>를 쓰면 5/2 = 2.5(float)가 되어 인덱스로 못 써요. ② Cross(+ 모양)는 <b>가운데 행이거나 가운데 열</b>이면 1이니 <code>or</code>. 만약 <code>and</code>를 쓰면 정중앙 한 칸만 1이 되어 완전히 다른 필터가 됩니다. (참고로 X 모양은 <code>i == j or i + j == n - 1</code>로 대각선을 잡아요.)</div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">문제 3 <span class="tag">성능 측정</span><span class="badge"></span></div>
+      <div class="q-prompt">실행 시간을 잴 때 <b>한 번만</b> 측정하면 안 되는 이유로 가장 적절한 것은?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">파이썬은 시간을 못 잰다</button>
+        <button class="opt" data-correct="true">OS 스케줄링·캐시 등 외부 요인으로 편차가 커서, 여러 번 재고 평균이나 최솟값을 봐야 한다</button>
+        <button class="opt" data-correct="false">한 번 재면 결과가 항상 0이 나온다</button>
+        <button class="opt" data-correct="false">측정 자체가 코드를 느리게 만든다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> 같은 코드를 여러 번 돌려도 시간이 매번 다릅니다 — 다른 프로그램이 CPU를 쓰거나, 캐시 상태가 다르거나 해서요. 그래서 <b>반복 측정</b> 후 평균(또는 최솟값)을 쓰는 게 정석이에요. N=5처럼 빠른 경우는 1회 측정이 <b>측정 오차보다도 짧아서</b> 0에 가깝게 나오기도 합니다. 리포트에 수치를 쓸 땐 몇 회 측정했는지도 밝히면 좋아요.</div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">문제 4 <span class="tag">데이터 설계</span><span class="badge"></span></div>
+      <div class="q-prompt">동점(UNDECIDED) 케이스를 <b>일부러</b> 데이터에 심으려면?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">Cross 점수와 X 점수를 정수로 똑같이 맞춘다</button>
+        <button class="opt" data-correct="true">소수 누적 결과가 미세하게만 다르도록 값을 배치한다 (예: 0.7 vs 0.1×7)</button>
+        <button class="opt" data-correct="false">필터를 전부 0으로 만든다</button>
+        <button class="opt" data-correct="false">동점은 일부러 만들 수 없다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> <code>0.1</code>을 일곱 번 더하면 정확히 0.7이 아니라 <b>0.7000000000000001</b>이 돼요. 그래서 한쪽엔 <code>0.7</code> 한 칸, 다른 쪽엔 <code>0.1</code> 일곱 칸을 배치하면 사람 눈엔 같은데 컴퓨터엔 미세하게 다른 <b>진짜 부동소수점 동점 케이스</b>가 만들어집니다. 1번(정수로 딱 맞추기)은 오차가 없어 부동소수점 함정을 보여주지 못해요. <b>주의</b>: 반복 덧셈이 <b>항상</b> 어긋나는 건 아니에요 — <code>0.1</code>을 여덟·아홉 번 더하면 우연히 0.8, 0.9와 정확히 같아집니다. 그래서 동점 케이스를 설계할 땐 <b>실제로 값을 찍어보고</b> 어긋나는 조합을 골라야 해요.</div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="q" data-type="fill">
+      <div class="q-head">문제 5 <span class="tag">빈칸 · 방어 코드</span><span class="badge"></span></div>
+      <div class="q-prompt">필터와 입력의 크기가 다르면 잘못된 결과가 나와요. 미리 막는 코드입니다. 빈칸 3곳.</div>
+      <div class="code">
+<div class="ln">def mac(grid, filt):</div>
+<div class="ln">    n = <input class="blank js-input" data-answer="len(grid)" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸1"></div>
+<div class="ln">    if len(filt) != n:</div>
+<div class="ln">        <input class="blank js-input" data-answer="raise" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸2"> ValueError(<span class="str">"크기 불일치"</span>)</div>
+<div class="ln">    total = <input class="blank js-input" data-answer="0.0|0" placeholder="___" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸3"></div>
+<div class="ln">    for i in range(n):</div>
+<div class="ln">        for j in range(n):</div>
+<div class="ln">            total += grid[i][j] * filt[i][j]</div>
+<div class="ln">    return total</div>
+      </div>
+      <div class="explain" hidden><span class="a">정답: len(grid), raise, 0.0</span> ① 격자 크기는 데이터에서 <code>len(grid)</code>로 구해요 — 숫자를 박아두면 크기가 바뀔 때 깨집니다. ② 잘못된 입력은 조용히 넘기지 말고 <code>raise</code>로 <b>즉시 알려야</b> 해요. 그냥 두면 IndexError가 한참 뒤에 엉뚱한 곳에서 터져 원인 찾기가 어려워집니다. ③ 누적 시작값은 <code>0.0</code>(0도 동작하지만, 실수 누적임을 드러내는 0.0이 의도가 분명해요).</div>
+    </div>
+
+    <!-- Q6 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">문제 6 <span class="tag">출력 예측</span><span class="badge"></span></div>
+      <div class="q-prompt">누적 순서에 따른 결과예요. 출력은?</div>
+      <div class="code">
+<div class="ln">a = 0.1 + 0.1 + 0.1</div>
+<div class="ln">b = 0.3</div>
+<div class="ln">print(a == b, abs(a - b) &lt; 1e-9)</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">True True</button>
+        <button class="opt" data-correct="true">False True</button>
+        <button class="opt" data-correct="false">False False</button>
+        <button class="opt" data-correct="false">True False</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: False True.</span> <code>0.1</code>을 세 번 더하면 0.30000000000000004가 되어 <code>== 0.3</code>은 <b>False</b>. 하지만 차이는 약 5.5e-17로 1e-9보다 훨씬 작아서 EPSILON 비교는 <b>True</b>. 같은 두 값을 두고 판정이 갈리는 것 — 이게 MAC처럼 <b>여러 번 누적</b>하는 연산에서 <code>==</code>를 쓰면 안 되는 이유입니다.</div>
+    </div>
+
+    <!-- Q7 -->
+    <div class="q" data-type="choice">
+      <div class="q-head">문제 7 <span class="tag">복잡도 심화</span><span class="badge"></span></div>
+      <div class="q-prompt">모드2에서 <b>P개의 패턴</b>을 각각 N×N MAC으로 처리하고, 패턴마다 Cross·X 두 번 계산한다면 전체 복잡도는?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">O(N²)</button>
+        <button class="opt" data-correct="true">O(P × N²)</button>
+        <button class="opt" data-correct="false">O(P²  × N)</button>
+        <button class="opt" data-correct="false">O(2N²)이며 P와 무관</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: O(P × N²).</span> MAC 한 번이 N² 이고, 패턴마다 2번 하니 2N², 그걸 P개 패턴에 반복하면 <code>P × 2N²</code>. 빅오에서 <b>상수 2는 무시</b>하므로 <code>O(P × N²)</code>입니다. 핵심은 두 가지 — 상수배는 빼고, 반복이 <b>중첩</b>되면 곱해진다는 것. 리포트에 "패턴 수에 비례해 선형으로, 격자 크기엔 제곱으로 늘어난다"고 쓰면 정확해요.</div>
+    </div>
+
+    <div class="btns">
+      <button id="grade" class="btn primary">채점하기</button>
+      <button id="reset" class="btn secondary">다시 풀기</button>
+      <button id="toggle" class="btn link">정답·해설 보기</button>
+    </div>
+    <div id="banner" class="banner" hidden></div>
+    <div class="foot">빈칸 정답은 대소문자·공백에 관계없이 채점돼요.</div>
+  </div>
+
+<script>
+  var questions = Array.prototype.slice.call(document.querySelectorAll('.q'));
+  var explainShown = false;
+  function norm(s){ return (s || '').replace(/\s+/g, '').toLowerCase(); }
+  function matches(inp){
+    var v = norm(inp.value);
+    return (inp.dataset.answer || '').split('|').some(function(a){ return norm(a) === v; });
+  }
+  questions.forEach(function(q){
+    var group = q.querySelector('.choices');
+    if(!group) return;
+    group.querySelectorAll('.opt').forEach(function(opt){
+      opt.addEventListener('click', function(){
+        group.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('sel','ok','bad'); });
+        opt.classList.add('sel');
+        q.classList.remove('ok','bad');
+        var b = q.querySelector('.badge'); if(b){ b.textContent=''; b.className='badge'; }
+      });
+    });
+  });
+  function qItems(q){
+    var group = q.querySelector('.choices');
+    if(group){
+      var sel = group.querySelector('.opt.sel');
+      return { correct: (!!sel && sel.dataset.correct === 'true') ? 1 : 0, total: 1 };
+    }
+    var inputs = Array.prototype.slice.call(q.querySelectorAll('.js-input'));
+    var c = 0;
+    inputs.forEach(function(inp){ if(matches(inp)) c++; });
+    return { correct: c, total: inputs.length };
+  }
+  function setExplain(on){
+    explainShown = on;
+    questions.forEach(function(q){ var ex = q.querySelector('.explain'); if(ex) ex.hidden = !on; });
+    document.getElementById('toggle').textContent = on ? '정답·해설 숨기기' : '정답·해설 보기';
+  }
+  function clearMarks(){
+    questions.forEach(function(q){
+      q.classList.remove('ok','bad');
+      var b = q.querySelector('.badge'); if(b){ b.textContent=''; b.className='badge'; }
+      q.querySelectorAll('.js-input').forEach(function(i){ i.classList.remove('ok','bad'); });
+      q.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('ok','bad'); });
+    });
+  }
+  document.getElementById('grade').addEventListener('click', function(){
+    clearMarks();
+    var totalCorrect = 0, totalItems = 0;
+    questions.forEach(function(q){
+      var s = qItems(q);
+      totalCorrect += s.correct; totalItems += s.total;
+      var full = s.total > 0 && s.correct === s.total;
+      q.classList.add(full ? 'ok' : 'bad');
+      var badge = q.querySelector('.badge');
+      if(badge){
+        badge.textContent = (s.total > 1) ? (s.correct + ' / ' + s.total + ' 칸') : (full ? '✓ 정답' : '✗ 다시');
+        badge.className = 'badge ' + (full ? 'ok' : 'bad');
+      }
+      q.querySelectorAll('.js-input').forEach(function(inp){
+        inp.classList.add(matches(inp) ? 'ok' : 'bad');
+      });
+      var group = q.querySelector('.choices');
+      if(group){
+        group.querySelectorAll('.opt').forEach(function(opt){
+          if(opt.dataset.correct === 'true') opt.classList.add('ok');
+          else if(opt.classList.contains('sel')) opt.classList.add('bad');
+        });
+      }
+    });
+    setExplain(true);
+    var banner = document.getElementById('banner');
+    banner.hidden = false;
+    if(totalCorrect === totalItems){
+      banner.className = 'banner ok';
+      banner.textContent = '🎉 ' + totalItems + '칸 전부 정답! 설계 의도까지 이해한 수준이에요.';
+    } else {
+      banner.className = 'banner amber';
+      banner.textContent = '총 ' + totalItems + '칸 중 ' + totalCorrect + '개 정답 — 초록은 정답, 빨강은 다시 볼 칸이에요. 해설 보고 고쳐서 다시 채점해도 돼요.';
+    }
+  });
+  document.getElementById('toggle').addEventListener('click', function(){ setExplain(!explainShown); });
+  document.getElementById('reset').addEventListener('click', function(){
+    clearMarks();
+    questions.forEach(function(q){
+      q.querySelectorAll('.js-input').forEach(function(i){ i.value = ''; });
+      q.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('sel'); });
+    });
+    setExplain(false);
+    document.getElementById('banner').hidden = true;
+  });
+</script>
+</body>
+</html>
