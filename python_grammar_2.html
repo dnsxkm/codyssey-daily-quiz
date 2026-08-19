@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>파이썬 주제별 퀴즈 ② — while · class · self · 딕셔너리 · 튜플 · import</title>
+<style>
+  :root{
+    --page-bg:#eceef5; --card:#ffffff; --ink:#1f2430; --sub:#5b6472;
+    --accent:#4f46e5; --accent-dark:#4338ca;
+    --code-bg:#1b1e2b; --code-ink:#e6e9f0; --code-cmt:#6b7488; --code-str:#9ece6a;
+    --ok:#16a34a; --ok-bg:rgba(22,163,74,.16);
+    --bad:#dc2626; --bad-bg:rgba(220,38,38,.16);
+    --blank-border:#5b6479; --blank-bg:rgba(148,163,184,.16);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--page-bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",Roboto,sans-serif;
+    padding:24px 14px;}
+  .card{max-width:720px; margin:0 auto; background:var(--card);
+    border-radius:18px; padding:26px 22px; box-shadow:0 8px 30px rgba(20,25,45,.08);}
+  .eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.5px; font-weight:700; color:var(--accent); letter-spacing:.4px;}
+  h1{font-size:22px; font-weight:800; margin:8px 0 6px; line-height:1.3;}
+  .intro{font-size:14.5px; line-height:1.7; color:var(--sub); margin:0 0 6px;}
+  .intro b{color:var(--ink);}
+  .toc{background:#f1f5ff; border:1px solid #dfe6fb; border-radius:12px; padding:13px 16px; margin:14px 0 0;}
+  .toc-h{font-size:13.5px; font-weight:800; color:var(--ink); margin-bottom:6px;}
+  .toc ol{margin:0; padding-left:20px; font-size:13.5px; line-height:1.8; color:var(--sub);}
+  .toc code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--ink);}
+  .part{margin-top:28px; margin-bottom:2px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.5px; font-weight:800; color:var(--accent-dark); letter-spacing:.4px;}
+  .part-sub{font-size:13px; color:var(--sub); margin:2px 0 0; line-height:1.6;}
+  .code{background:var(--code-bg); border-radius:12px; padding:14px 14px; overflow-x:auto;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; margin-top:4px;}
+  .ln{white-space:pre; line-height:25px; color:var(--code-ink);}
+  .cmt{color:var(--code-cmt); font-style:italic;}
+  .str{color:var(--code-str);}
+  .blank{width:12ch; font-family:inherit; font-size:inherit; color:var(--code-ink);
+    background:var(--blank-bg); border:1.5px solid var(--blank-border); border-radius:6px;
+    padding:0 6px; margin:0 2px; text-align:center;}
+  .blank::placeholder{color:#6b7488;}
+  .blank:focus{outline:none; border-color:#818cf8; box-shadow:0 0 0 2px rgba(129,140,248,.30);}
+  .blank.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .blank.bad{border-color:var(--bad); background:var(--bad-bg);}
+  .q{border:1px solid #e7e9f0; border-radius:14px; padding:16px; margin-top:12px; background:#fff;}
+  .q.ok{border-color:#bbf7d0; background:#f6fef9;}
+  .q.bad{border-color:#fecaca; background:#fffafa;}
+  .q-head{display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:800; color:var(--ink); margin-bottom:8px;}
+  .tag{font-size:11.5px; font-weight:700; color:var(--accent-dark); background:#eef1f8; padding:2px 9px; border-radius:999px;}
+  .badge{margin-left:auto; font-size:13px; font-weight:800;}
+  .badge.ok{color:var(--ok);} .badge.bad{color:var(--bad);}
+  .q-prompt{font-size:14px; line-height:1.65; color:var(--ink); margin-bottom:4px;}
+  .q-prompt code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+  .choices{display:flex; flex-direction:column; gap:8px; margin-top:10px;}
+  .opt{text-align:left; font-size:14px; padding:10px 12px; border:1.5px solid #d7dbe6; border-radius:10px;
+    background:#fff; cursor:pointer; color:var(--ink); font-family:inherit;}
+  .opt:hover{border-color:#b9c0d4;}
+  .opt.sel{border-color:var(--accent); background:#eef0ff;}
+  .opt.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .opt.bad{border-color:var(--bad); background:var(--bad-bg);}
+  .opt:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .opt code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+  .explain{margin-top:12px; padding:12px 14px; background:#f1f5ff; border:1px solid #dfe6fb; border-radius:10px;
+    font-size:13.5px; line-height:1.7; color:var(--sub);}
+  .explain b{color:var(--ink);}
+  .explain .a{font-weight:800; color:var(--accent-dark);}
+  .explain code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--ink);}
+  .btns{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:20px;}
+  .btn{font-size:15px; border-radius:10px; cursor:pointer; padding:11px 20px;}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .btn.primary{background:var(--accent); color:#fff; border:none; font-weight:700;}
+  .btn.secondary{background:#eceef5; color:var(--ink); border:1px solid #d7dbe6; font-weight:600;}
+  .btn.link{background:transparent; color:var(--accent); border:none; font-weight:600; padding:11px 6px; text-decoration:underline;}
+  .banner{margin-top:16px; padding:12px 16px; border-radius:10px; font-size:14.5px; font-weight:600;}
+  .banner.ok{background:#dcfce7; color:#166534;}
+  .banner.amber{background:#fef3c7; color:#b45309;}
+  .score{margin-top:12px; display:none; flex-wrap:wrap; gap:8px;}
+  .score.show{display:flex;}
+  .sc{font-size:12.5px; font-weight:700; padding:6px 12px; border-radius:999px;}
+  .foot{margin-top:18px; font-size:12.5px; color:var(--code-cmt); text-align:center;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="eyebrow"># 파이썬 주제별 · 데일리 퀴즈 ②</div>
+    <h1>🎯 6가지 주제 집중 공략 (2탄)</h1>
+    <p class="intro">이번 주제는 <b>while문</b>과 <b>튜플</b>이 새로 들어왔어요. 채점하면 주제별 점수가 따로 나와서 <b>어느 부분이 약한지</b> 바로 보입니다. 총 <b>18문제</b>.</p>
+
+    <div class="toc">
+      <div class="toc-h">📚 다루는 주제</div>
+      <ol>
+        <li><code>while</code>문 — 조건이 참인 동안 반복</li>
+        <li>클래스 — 틀 만들기</li>
+        <li><code>self</code> — 객체 자신 가리키기</li>
+        <li>딕셔너리 — 키·값 다루기</li>
+        <li>튜플 — 바꿀 수 없는 묶음</li>
+        <li><code>import</code> — 라이브러리 가져오기</li>
+      </ol>
+    </div>
+
+    <div class="part">▚ 주제 1 · while문</div>
+    <p class="part-sub">횟수를 모를 때, 조건이 참인 동안 반복.</p>
+
+    <!-- 1 -->
+    <div class="q" data-topic="while">
+      <div class="q-head">문제 1 <span class="tag">출력 예측</span><span class="badge"></span></div>
+      <div class="q-prompt">반복이 끝난 뒤 출력은?</div>
+      <div class="code">
+<div class="ln">i = 0</div>
+<div class="ln">while i &lt; 3:</div>
+<div class="ln">    i += 1</div>
+<div class="ln">print(i)</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">2</button>
+        <button class="opt" data-correct="true">3</button>
+        <button class="opt" data-correct="false">4</button>
+        <button class="opt" data-correct="false">무한 반복된다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 3.</span> i가 0,1,2일 때 조건이 참이라 세 번 돌면서 i는 3이 돼요. 그 다음 <code>3 &lt; 3</code>이 거짓이 되어 빠져나갑니다. 즉 <b>반복이 끝나는 순간의 i는 조건을 처음 어긴 값</b>이에요. 만약 <code>i += 1</code>을 빠뜨리면 조건이 영원히 참이라 <b>무한 루프</b>가 됩니다.</div>
+    </div>
+
+    <!-- 2 -->
+    <div class="q" data-topic="while">
+      <div class="q-head">문제 2 <span class="tag">for와 비교</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>while</code>문이 <code>for</code>문보다 적합한 상황은?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">리스트의 모든 원소를 하나씩 처리할 때</button>
+        <button class="opt" data-correct="true">몇 번 반복할지 미리 모르고, 조건이 만족될 때까지 계속해야 할 때</button>
+        <button class="opt" data-correct="false">정확히 10번 반복할 때</button>
+        <button class="opt" data-correct="false">항상 for가 더 좋아서 while은 쓸 일이 없다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> <b>횟수를 알면 for, 조건으로 끝내면 while</b>이 기본 원칙이에요. 예를 들어 "사용자가 올바른 값을 넣을 때까지 계속 묻기"는 몇 번 만에 성공할지 모르니 while이 맞습니다. 반대로 리스트 순회나 정해진 횟수는 for가 더 간결하고 안전해요.</div>
+    </div>
+
+    <!-- 3 -->
+    <div class="q" data-topic="while">
+      <div class="q-head">문제 3 <span class="tag">break / continue</span><span class="badge"></span></div>
+      <div class="q-prompt">출력은?</div>
+      <div class="code">
+<div class="ln">result = []</div>
+<div class="ln">i = 0</div>
+<div class="ln">while i &lt; 5:</div>
+<div class="ln">    i += 1</div>
+<div class="ln">    if i % 2 == 0:</div>
+<div class="ln">        continue</div>
+<div class="ln">    result.append(i)</div>
+<div class="ln">print(result)</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">[2, 4]</button>
+        <button class="opt" data-correct="true">[1, 3, 5]</button>
+        <button class="opt" data-correct="false">[1, 2, 3, 4, 5]</button>
+        <button class="opt" data-correct="false">[]</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: [1, 3, 5].</span> <code>continue</code>는 <b>이번 회차의 남은 부분만 건너뛰고</b> 다시 조건 검사로 돌아가요. 짝수일 때 append를 건너뛰니 홀수만 담깁니다. 반면 <code>break</code>는 <b>반복 자체를 완전히 끝내는</b> 것이라 결과가 <code>[1]</code>이 됐을 거예요. <b>continue는 건너뛰기, break는 탈출</b>로 구분하세요.</div>
+    </div>
+
+    <!-- 4 -->
+    <div class="q" data-topic="while">
+      <div class="q-head">문제 4 <span class="tag">무한 루프</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>while True:</code> 로 시작하는 반복문에서 빠져나오려면?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">조건이 저절로 False가 되기를 기다린다</button>
+        <button class="opt" data-correct="true"><code>break</code> 또는 <code>return</code>으로 직접 빠져나온다</button>
+        <button class="opt" data-correct="false"><code>continue</code>를 쓴다</button>
+        <button class="opt" data-correct="false">빠져나올 수 없다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> <code>True</code>는 영원히 참이라 조건이 스스로 거짓이 될 수 없어요. 그래서 반드시 안에서 <code>break</code>(반복 탈출)나 <code>return</code>(함수 종료)으로 끊어야 합니다. "올바른 입력을 받을 때까지 계속 묻기" 같은 상황에서 <b>성공하면 return</b> 하는 식으로 자주 쓰여요.</div>
+    </div>
+
+    <div class="part">▚ 주제 2 · 클래스</div>
+    <p class="part-sub">데이터와 기능을 하나로 묶는 틀.</p>
+
+    <!-- 5 -->
+    <div class="q" data-topic="클래스">
+      <div class="q-head">문제 5 <span class="tag">개념</span><span class="badge"></span></div>
+      <div class="q-prompt">클래스를 쓰는 가장 큰 이유는?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">코드 실행 속도가 빨라져서</button>
+        <button class="opt" data-correct="true">관련된 데이터와 기능을 하나로 묶어, 같은 구조를 여러 개 만들 수 있어서</button>
+        <button class="opt" data-correct="false">파이썬에서 함수를 쓰려면 반드시 필요해서</button>
+        <button class="opt" data-correct="false">메모리를 적게 써서</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> 학생 100명을 관리한다면 이름·점수 변수를 100쌍 만드는 대신, <code>Student</code> 클래스 하나로 객체 100개를 찍어내면 돼요. <b>데이터(이름, 점수)와 기능(성적 계산)이 한 덩어리</b>로 묶여 있어서 관리도 쉽습니다. 속도나 메모리 때문이 아니라 <b>구조화</b>가 목적이에요.</div>
+    </div>
+
+    <!-- 6 -->
+    <div class="q" data-topic="클래스">
+      <div class="q-head">문제 6 <span class="tag">출력 예측</span><span class="badge"></span></div>
+      <div class="q-prompt">객체를 두 개 만들었어요. 출력은?</div>
+      <div class="code">
+<div class="ln">class Student:</div>
+<div class="ln">    count = 0                <span class="cmt"># 클래스 속성</span></div>
+<div class="ln">    def __init__(self, name):</div>
+<div class="ln">        self.name = name</div>
+<div class="ln">        Student.count += 1</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">a = Student(<span class="str">"민수"</span>)</div>
+<div class="ln">b = Student(<span class="str">"영희"</span>)</div>
+<div class="ln">print(Student.count)</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">0</button>
+        <button class="opt" data-correct="false">1</button>
+        <button class="opt" data-correct="true">2</button>
+        <button class="opt" data-correct="false">에러가 난다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2.</span> <code>Student.count</code>는 <b>클래스에 하나만</b> 있는 값이라 객체를 만들 때마다 공유된 카운터가 올라가요. 객체가 2개 만들어졌으니 2입니다. 이렇게 <b>"지금까지 몇 개 만들어졌나"</b> 같은 전체 통계를 클래스 속성으로 관리할 수 있어요. 반면 <code>self.name</code>은 객체마다 따로입니다.</div>
+    </div>
+
+    <!-- 7 -->
+    <div class="q" data-topic="클래스">
+      <div class="q-head">문제 7 <span class="tag">용어</span><span class="badge"></span></div>
+      <div class="q-prompt">클래스 안에 정의된 <b>함수</b>를 부르는 이름은?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">속성 (attribute)</button>
+        <button class="opt" data-correct="true">메서드 (method)</button>
+        <button class="opt" data-correct="false">인스턴스 (instance)</button>
+        <button class="opt" data-correct="false">모듈 (module)</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 메서드.</span> 용어를 정리하면 — 클래스 안의 <b>함수</b>는 메서드, 클래스가 가진 <b>값</b>은 속성(attribute), 클래스로 만들어낸 <b>실물</b>은 인스턴스(객체)예요. <code>a.name</code>은 속성 접근이고 <code>a.greet()</code>는 메서드 호출입니다. 괄호가 붙으면 메서드라고 보면 쉬워요.</div>
+    </div>
+
+    <div class="part">▚ 주제 3 · self</div>
+    <p class="part-sub">메서드 안에서 "나 자신"을 부르는 법.</p>
+
+    <!-- 8 -->
+    <div class="q" data-topic="self">
+      <div class="q-head">문제 8 <span class="tag">동작 원리</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>a.greet()</code> 라고 호출하면 파이썬은 내부적으로 무엇과 같게 처리할까요?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false"><code>greet()</code></button>
+        <button class="opt" data-correct="true"><code>Person.greet(a)</code> — a가 self 자리에 들어간다</button>
+        <button class="opt" data-correct="false"><code>Person.greet()</code></button>
+        <button class="opt" data-correct="false"><code>greet(self)</code></button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> 점(<code>.</code>) 앞에 있는 객체가 <b>자동으로 첫 인자</b>가 돼요. 그래서 <code>def greet(self):</code>라고 매개변수를 하나 적어두면 거기에 a가 들어갑니다. 우리가 괄호 안에 아무것도 안 써도 되는 이유가 이거예요. 이 구조를 알면 self를 왜 적어야 하는지 자연스럽게 이해됩니다.</div>
+    </div>
+
+    <!-- 9 -->
+    <div class="q" data-topic="self">
+      <div class="q-head">문제 9 <span class="tag">빈칸</span><span class="badge"></span></div>
+      <div class="q-prompt">메서드가 <b>같은 객체의 다른 메서드</b>를 부르는 코드예요. 빈칸을 채우세요.</div>
+      <div class="code">
+<div class="ln">class Calc:</div>
+<div class="ln">    def __init__(self, n):</div>
+<div class="ln">        self.n = n</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">    def double(self):</div>
+<div class="ln">        return self.n * 2</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">    def quad(self):</div>
+<div class="ln">        <span class="cmt"># double을 두 번 적용</span></div>
+<div class="ln">        return <input class="blank js-input" data-answer="self.double()|self.double" placeholder="_________" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸1"> * 2</div>
+      </div>
+      <div class="explain" hidden><span class="a">정답: self.double()</span> 같은 클래스 안에 있어도 <b>그냥 <code>double()</code>이라고 쓰면 NameError</b>가 나요. 메서드는 객체에 속해 있으니 반드시 <code>self.</code>를 붙여 "내 안의 double"이라고 지목해야 합니다. 속성이든 메서드든 <b>객체의 것을 쓸 땐 항상 self.</b>가 규칙이에요.</div>
+    </div>
+
+    <div class="part">▚ 주제 4 · 딕셔너리</div>
+    <p class="part-sub">키로 값을 찾는 자료구조.</p>
+
+    <!-- 10 -->
+    <div class="q" data-topic="딕셔너리">
+      <div class="q-head">문제 10 <span class="tag">순회</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>for k in d:</code> 로 딕셔너리를 돌면 k에 들어오는 것은?</div>
+      <div class="choices">
+        <button class="opt" data-correct="true">키</button>
+        <button class="opt" data-correct="false">값</button>
+        <button class="opt" data-correct="false">(키, 값) 튜플</button>
+        <button class="opt" data-correct="false">에러가 난다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 키.</span> 딕셔너리를 그냥 for에 넣으면 <b>키만</b> 나와요. 값이 필요하면 <code>d[k]</code>로 꺼내거나, 처음부터 <code>for k, v in d.items():</code>로 둘 다 받으면 됩니다. 값만 필요하면 <code>for v in d.values():</code>를 쓰세요. <code>in</code> 연산자도 같은 규칙이라 <code>"a" in d</code>는 키를 찾습니다.</div>
+    </div>
+
+    <!-- 11 -->
+    <div class="q" data-topic="딕셔너리">
+      <div class="q-head">문제 11 <span class="tag">items</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>d = {"a": 1}</code> 일 때 <code>list(d.items())</code> 의 결과는?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">['a']</button>
+        <button class="opt" data-correct="false">[1]</button>
+        <button class="opt" data-correct="true">[('a', 1)]</button>
+        <button class="opt" data-correct="false">[{'a': 1}]</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: [('a', 1)].</span> <code>.items()</code>는 <b>(키, 값) 튜플</b>들을 내놓아요. 그래서 <code>for k, v in d.items():</code>처럼 두 변수로 받아 쓸 수 있는 겁니다 — 튜플이 자동으로 풀리거든요(언패킹). 정렬할 때도 <code>sorted(d.items(), key=...)</code> 형태로 자주 씁니다.</div>
+    </div>
+
+    <!-- 12 -->
+    <div class="q" data-topic="딕셔너리">
+      <div class="q-head">문제 12 <span class="tag">키 조건</span><span class="badge"></span></div>
+      <div class="q-prompt">딕셔너리의 <b>키</b>로 쓸 수 <b>없는</b> 것은?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">문자열 <code>"a"</code></button>
+        <button class="opt" data-correct="false">정수 <code>1</code></button>
+        <button class="opt" data-correct="false">튜플 <code>(1, 2)</code></button>
+        <button class="opt" data-correct="true">리스트 <code>[1, 2]</code></button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 리스트.</span> 키는 <b>변하지 않는 값</b>이어야 해요. 리스트는 내용이 바뀔 수 있어서 키로 쓰면 <code>TypeError: unhashable type</code>이 납니다. 반면 <b>튜플은 바꿀 수 없으니</b> 키로 쓸 수 있어요 — 좌표 <code>{(1,2): "보물"}</code>처럼요. 이게 튜플의 실용적인 쓰임 중 하나입니다.</div>
+    </div>
+
+    <div class="part">▚ 주제 5 · 튜플</div>
+    <p class="part-sub">한 번 만들면 바꿀 수 없는 묶음.</p>
+
+    <!-- 13 -->
+    <div class="q" data-topic="튜플">
+      <div class="q-head">문제 13 <span class="tag">함정</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>type((1))</code> 과 <code>type((1,))</code> 의 결과는?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">둘 다 tuple</button>
+        <button class="opt" data-correct="true">앞은 int, 뒤는 tuple</button>
+        <button class="opt" data-correct="false">앞은 tuple, 뒤는 int</button>
+        <button class="opt" data-correct="false">둘 다 int</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: int, tuple.</span> 튜플을 만드는 건 괄호가 아니라 <b>쉼표</b>예요. <code>(1)</code>은 그냥 "괄호로 감싼 숫자 1"이라 int입니다. 원소가 하나인 튜플을 만들려면 <b>뒤에 쉼표</b>를 붙여 <code>(1,)</code>이라고 써야 해요. 실수하기 쉬운 문법이라 꼭 기억해두세요.</div>
+    </div>
+
+    <!-- 14 -->
+    <div class="q" data-topic="튜플">
+      <div class="q-head">문제 14 <span class="tag">언패킹</span><span class="badge"></span></div>
+      <div class="q-prompt">두 변수의 값을 맞바꾸는 코드예요. 출력은?</div>
+      <div class="code">
+<div class="ln">x, y = 1, 2</div>
+<div class="ln">x, y = y, x</div>
+<div class="ln">print(x, y)</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">1 2</button>
+        <button class="opt" data-correct="true">2 1</button>
+        <button class="opt" data-correct="false">2 2</button>
+        <button class="opt" data-correct="false">1 1</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2 1.</span> 오른쪽 <code>y, x</code>가 먼저 <b>튜플 (2, 1)로 묶인 뒤</b> 왼쪽 변수들에 하나씩 풀려 들어가요(언패킹). 그래서 임시 변수 없이 한 줄로 값을 교환할 수 있습니다. 다른 언어에선 <code>temp</code> 변수를 만들어야 하는 작업이라, 파이썬의 대표적인 편의 문법이에요.</div>
+    </div>
+
+    <!-- 15 -->
+    <div class="q" data-topic="튜플">
+      <div class="q-head">문제 15 <span class="tag">불변성</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>t = (1, 2, 3)</code> 일 때 <code>t[0] = 9</code> 를 실행하면?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">(9, 2, 3)이 된다</button>
+        <button class="opt" data-correct="true">TypeError가 난다</button>
+        <button class="opt" data-correct="false">새 튜플이 만들어진다</button>
+        <button class="opt" data-correct="false">아무 일도 일어나지 않는다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: TypeError.</span> 튜플은 <b>불변(immutable)</b>이라 원소를 바꿀 수 없어요. 값을 바꿔야 한다면 애초에 리스트를 쓰거나, <code>t = (9,) + t[1:]</code>처럼 <b>새 튜플을 만들어야</b> 합니다. 참고로 <code>append</code>, <code>remove</code> 같은 메서드도 튜플엔 없어요 — 대신 <code>count</code>, <code>index</code>는 쓸 수 있습니다.</div>
+    </div>
+
+    <div class="part">▚ 주제 6 · import</div>
+    <p class="part-sub">남이 만든 코드 가져다 쓰기.</p>
+
+    <!-- 16 -->
+    <div class="q" data-topic="import">
+      <div class="q-head">문제 16 <span class="tag">방식 차이</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>from math import sqrt</code> 로 불러왔을 때 <b>올바른</b> 사용법은?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false"><code>math.sqrt(16)</code></button>
+        <button class="opt" data-correct="true"><code>sqrt(16)</code></button>
+        <button class="opt" data-correct="false"><code>import.sqrt(16)</code></button>
+        <button class="opt" data-correct="false"><code>from.sqrt(16)</code></button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: sqrt(16).</span> <code>from A import B</code>는 <b>B만 콕 집어</b> 가져오는 방식이라, 모듈 이름 없이 바로 씁니다. 반대로 <code>import math</code>로 불러왔다면 항상 <code>math.sqrt()</code>처럼 <b>앞에 모듈 이름</b>을 붙여야 해요. 두 방식을 섞어 쓰면 헷갈리니 한 파일에선 통일하는 게 좋습니다.</div>
+    </div>
+
+    <!-- 17 -->
+    <div class="q" data-topic="import">
+      <div class="q-head">문제 17 <span class="tag">as</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>import pandas as pd</code> 에서 <code>as pd</code> 가 하는 일은?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">pandas의 일부 기능만 가져온다</button>
+        <button class="opt" data-correct="true">모듈에 짧은 별명을 붙여 <code>pd.</code> 로 쓸 수 있게 한다</button>
+        <button class="opt" data-correct="false">pandas를 설치한다</button>
+        <button class="opt" data-correct="false">pandas를 pd라는 이름으로 저장한다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> <code>as</code>는 <b>별명(alias)</b>을 붙이는 키워드예요. 긴 모듈 이름을 매번 치기 번거로우니 짧게 줄이는 거죠. <code>pandas → pd</code>, <code>numpy → np</code>처럼 <b>관례로 굳어진 별명</b>들이 있어서, 그대로 따르면 다른 사람도 코드를 쉽게 읽을 수 있어요.</div>
+    </div>
+
+    <!-- 18 -->
+    <div class="q" data-topic="import">
+      <div class="q-head">문제 18 <span class="tag">표준 vs 외부</span><span class="badge"></span></div>
+      <div class="q-prompt">다음 중 <b>설치 없이 바로</b> import할 수 있는 것은?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">pandas</button>
+        <button class="opt" data-correct="false">numpy</button>
+        <button class="opt" data-correct="true">json</button>
+        <button class="opt" data-correct="false">requests</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: json.</span> <code>json</code>, <code>math</code>, <code>random</code>, <code>os</code>, <code>datetime</code> 등은 파이썬에 <b>기본 내장된 표준 라이브러리</b>라 바로 쓸 수 있어요. 반면 pandas·numpy·requests는 <b>외부 라이브러리</b>라 <code>pip install</code>로 먼저 설치해야 합니다. 설치 안 하고 import하면 <code>ModuleNotFoundError</code>가 나요.</div>
+    </div>
+
+    <div class="btns">
+      <button id="grade" class="btn primary">채점하기</button>
+      <button id="reset" class="btn secondary">다시 풀기</button>
+      <button id="toggle" class="btn link">정답·해설 보기</button>
+    </div>
+    <div id="banner" class="banner" hidden></div>
+    <div id="score" class="score"></div>
+    <div class="foot">주제별 점수가 함께 표시돼요. 빈칸은 대소문자·공백 무관.</div>
+  </div>
+
+<script>
+  var questions = Array.prototype.slice.call(document.querySelectorAll('.q'));
+  var shown = false;
+  function norm(s){ return (s||'').replace(/\s+/g,'').toLowerCase(); }
+  function matches(inp){
+    var v = norm(inp.value);
+    return (inp.dataset.answer||'').split('|').some(function(a){ return norm(a)===v; });
+  }
+  questions.forEach(function(q){
+    var group = q.querySelector('.choices');
+    if(!group) return;
+    group.querySelectorAll('.opt').forEach(function(opt){
+      opt.addEventListener('click', function(){
+        group.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('sel','ok','bad'); });
+        opt.classList.add('sel');
+        q.classList.remove('ok','bad');
+        var b=q.querySelector('.badge'); if(b){ b.textContent=''; b.className='badge'; }
+      });
+    });
+  });
+  function isCorrect(q){
+    var group = q.querySelector('.choices');
+    if(group){
+      var sel = group.querySelector('.opt.sel');
+      return !!sel && sel.dataset.correct === 'true';
+    }
+    var ins = Array.prototype.slice.call(q.querySelectorAll('.js-input'));
+    return ins.length > 0 && ins.every(matches);
+  }
+  function setExplain(on){
+    shown = on;
+    questions.forEach(function(q){ var ex=q.querySelector('.explain'); if(ex) ex.hidden=!on; });
+    document.getElementById('toggle').textContent = on ? '정답·해설 숨기기' : '정답·해설 보기';
+  }
+  function clearMarks(){
+    questions.forEach(function(q){
+      q.classList.remove('ok','bad');
+      var b=q.querySelector('.badge'); if(b){ b.textContent=''; b.className='badge'; }
+      q.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('ok','bad'); });
+      q.querySelectorAll('.js-input').forEach(function(i){ i.classList.remove('ok','bad'); });
+    });
+    document.getElementById('score').classList.remove('show');
+  }
+  document.getElementById('grade').addEventListener('click', function(){
+    clearMarks();
+    var correct = 0, byTopic = {};
+    questions.forEach(function(q){
+      var t = q.dataset.topic || '기타';
+      if(!byTopic[t]) byTopic[t] = {c:0, n:0};
+      byTopic[t].n++;
+      var ok = isCorrect(q);
+      if(ok){ correct++; byTopic[t].c++; }
+      q.classList.add(ok ? 'ok' : 'bad');
+      var badge = q.querySelector('.badge');
+      if(badge){ badge.textContent = ok ? '✓ 정답' : '✗ 다시'; badge.className='badge '+(ok?'ok':'bad'); }
+      q.querySelectorAll('.opt').forEach(function(opt){
+        if(opt.dataset.correct === 'true') opt.classList.add('ok');
+        else if(opt.classList.contains('sel')) opt.classList.add('bad');
+      });
+      q.querySelectorAll('.js-input').forEach(function(i){ i.classList.add(matches(i)?'ok':'bad'); });
+    });
+    setExplain(true);
+    var b = document.getElementById('banner');
+    b.hidden = false;
+    if(correct === questions.length){
+      b.className='banner ok';
+      b.textContent='🎉 '+questions.length+'문제 모두 정답! 6개 주제 완전 정복이에요.';
+    } else {
+      b.className='banner amber';
+      b.textContent=questions.length+'문제 중 '+correct+'개 정답 — 아래 주제별 점수에서 약한 곳을 확인해보세요.';
+    }
+    var sc = document.getElementById('score');
+    sc.innerHTML='';
+    Object.keys(byTopic).forEach(function(t){
+      var v=byTopic[t];
+      var el=document.createElement('span');
+      el.className='sc';
+      el.textContent=t+' '+v.c+'/'+v.n;
+      el.style.background=(v.c===v.n)?'#dcfce7':'#fef3c7';
+      el.style.color=(v.c===v.n)?'#166534':'#b45309';
+      sc.appendChild(el);
+    });
+    sc.classList.add('show');
+  });
+  document.getElementById('toggle').addEventListener('click', function(){ setExplain(!shown); });
+  document.getElementById('reset').addEventListener('click', function(){
+    clearMarks();
+    questions.forEach(function(q){
+      q.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('sel'); });
+      q.querySelectorAll('.js-input').forEach(function(i){ i.value=''; });
+    });
+    setExplain(false);
+    document.getElementById('banner').hidden = true;
+  });
+</script>
+</body>
+</html>
