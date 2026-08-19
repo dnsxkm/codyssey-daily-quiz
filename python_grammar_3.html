@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>파이썬 심화 개념 퀴즈 — 동작 원리 이해하기</title>
+<style>
+  :root{
+    --page-bg:#eceef5; --card:#ffffff; --ink:#1f2430; --sub:#5b6472;
+    --accent:#4f46e5; --accent-dark:#4338ca;
+    --code-bg:#1b1e2b; --code-ink:#e6e9f0; --code-cmt:#6b7488; --code-str:#9ece6a;
+    --ok:#16a34a; --ok-bg:rgba(22,163,74,.16);
+    --bad:#dc2626; --bad-bg:rgba(220,38,38,.16);
+    --blank-border:#5b6479; --blank-bg:rgba(148,163,184,.16);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--page-bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",Roboto,sans-serif;
+    padding:24px 14px;}
+  .card{max-width:720px; margin:0 auto; background:var(--card);
+    border-radius:18px; padding:26px 22px; box-shadow:0 8px 30px rgba(20,25,45,.08);}
+  .eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.5px; font-weight:700; color:var(--accent); letter-spacing:.4px;}
+  h1{font-size:22px; font-weight:800; margin:8px 0 6px; line-height:1.3;}
+  .intro{font-size:14.5px; line-height:1.7; color:var(--sub); margin:0 0 6px;}
+  .intro b{color:var(--ink);}
+  .part{margin-top:26px; margin-bottom:2px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.5px; font-weight:800; color:var(--accent-dark); letter-spacing:.4px;}
+  .part-sub{font-size:13px; color:var(--sub); margin:2px 0 0; line-height:1.6;}
+  .code{background:var(--code-bg); border-radius:12px; padding:14px 14px; overflow-x:auto;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; margin-top:4px;}
+  .ln{white-space:pre; line-height:25px; color:var(--code-ink);}
+  .cmt{color:var(--code-cmt); font-style:italic;}
+  .str{color:var(--code-str);}
+  .q{border:1px solid #e7e9f0; border-radius:14px; padding:16px; margin-top:12px; background:#fff;}
+  .q.ok{border-color:#bbf7d0; background:#f6fef9;}
+  .q.bad{border-color:#fecaca; background:#fffafa;}
+  .q-head{display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:800; color:var(--ink); margin-bottom:8px;}
+  .tag{font-size:11.5px; font-weight:700; color:var(--accent-dark); background:#eef1f8; padding:2px 9px; border-radius:999px;}
+  .badge{margin-left:auto; font-size:13px; font-weight:800;}
+  .badge.ok{color:var(--ok);} .badge.bad{color:var(--bad);}
+  .q-prompt{font-size:14px; line-height:1.65; color:var(--ink); margin-bottom:4px;}
+  .q-prompt code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+  .choices{display:flex; flex-direction:column; gap:8px; margin-top:10px;}
+  .opt{text-align:left; font-size:14px; padding:10px 12px; border:1.5px solid #d7dbe6; border-radius:10px;
+    background:#fff; cursor:pointer; color:var(--ink); font-family:inherit;}
+  .opt:hover{border-color:#b9c0d4;}
+  .opt.sel{border-color:var(--accent); background:#eef0ff;}
+  .opt.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .opt.bad{border-color:var(--bad); background:var(--bad-bg);}
+  .opt:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .opt code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+  .explain{margin-top:12px; padding:12px 14px; background:#f1f5ff; border:1px solid #dfe6fb; border-radius:10px;
+    font-size:13.5px; line-height:1.7; color:var(--sub);}
+  .explain b{color:var(--ink);}
+  .explain .a{font-weight:800; color:var(--accent-dark);}
+  .explain code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--ink);}
+  .btns{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:20px;}
+  .btn{font-size:15px; border-radius:10px; cursor:pointer; padding:11px 20px;}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .btn.primary{background:var(--accent); color:#fff; border:none; font-weight:700;}
+  .btn.secondary{background:#eceef5; color:var(--ink); border:1px solid #d7dbe6; font-weight:600;}
+  .btn.link{background:transparent; color:var(--accent); border:none; font-weight:600; padding:11px 6px; text-decoration:underline;}
+  .banner{margin-top:16px; padding:12px 16px; border-radius:10px; font-size:14.5px; font-weight:600;}
+  .banner.ok{background:#dcfce7; color:#166534;}
+  .banner.amber{background:#fef3c7; color:#b45309;}
+  .foot{margin-top:18px; font-size:12.5px; color:var(--code-cmt); text-align:center;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="eyebrow"># 파이썬 심화 · 데일리 퀴즈</div>
+    <h1>🔥 동작 원리 파고들기</h1>
+    <p class="intro">문법을 아는 것과 <b>왜 그렇게 동작하는지</b>를 아는 건 다릅니다. 여기 있는 12문제는 경력자도 자주 틀리는 것들이에요 — 객체와 참조, 가변성, 스코프, 진리값 판정. <b>찍으면 거의 틀립니다.</b> 실제로 파이썬에 돌려 검증한 결과만 담았어요.</p>
+
+    <div class="part">▚ PART 1 · 객체와 참조</div>
+    <p class="part-sub">변수는 값을 담는 상자가 아니라, 객체에 붙인 이름표.</p>
+
+    <!-- 1 -->
+    <div class="q">
+      <div class="q-head">문제 1 <span class="tag">가변성</span><span class="badge"></span></div>
+      <div class="q-prompt">튜플은 수정할 수 없다고 했는데… 출력은?</div>
+      <div class="code">
+<div class="ln">t = ([1, 2], 3)</div>
+<div class="ln">t[0].append(9)</div>
+<div class="ln">print(t)</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">TypeError가 난다</button>
+        <button class="opt" data-correct="true">([1, 2, 9], 3)</button>
+        <button class="opt" data-correct="false">([1, 2], 3)</button>
+        <button class="opt" data-correct="false">([9], 3)</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: ([1, 2, 9], 3).</span> 튜플이 "못 바꾼다"는 건 <b>어떤 객체를 가리키는지</b>를 못 바꾼다는 뜻이에요. 그 안에 든 리스트 <b>자체</b>는 여전히 가변이라 <code>append</code>가 먹힙니다. 반면 <code>t[1] = 5</code>처럼 <b>칸을 다른 객체로 갈아끼우는</b> 건 TypeError. "튜플은 이름표 목록이 고정될 뿐, 가리키는 대상의 내용까지 얼리지는 않는다"고 기억하세요.</div>
+    </div>
+
+    <!-- 2 -->
+    <div class="q">
+      <div class="q-head">문제 2 <span class="tag">곱셈 복사</span><span class="badge"></span></div>
+      <div class="q-prompt">3×3 격자를 만들려 했어요. 출력은?</div>
+      <div class="code">
+<div class="ln">grid = [[0] * 3] * 3</div>
+<div class="ln">grid[0][0] = 1</div>
+<div class="ln">print(grid)</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">[[1, 0, 0], [0, 0, 0], [0, 0, 0]]</button>
+        <button class="opt" data-correct="true">[[1, 0, 0], [1, 0, 0], [1, 0, 0]]</button>
+        <button class="opt" data-correct="false">[[1, 1, 1], [0, 0, 0], [0, 0, 0]]</button>
+        <button class="opt" data-correct="false">에러가 난다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 세 줄 모두 바뀝니다.</span> 바깥 <code>* 3</code>은 리스트를 <b>세 개 만드는 게 아니라</b>, <b>같은 리스트 하나</b>를 가리키는 이름표를 3개 늘어놓아요. 그래서 한 줄을 고치면 세 줄이 다 바뀐 것처럼 보입니다. 올바른 방법은 <code>[[0]*3 for _ in range(3)]</code> — 컴프리헨션은 매번 <b>새 리스트</b>를 만들어요. 2차원 배열 만들 때 가장 흔한 버그입니다.</div>
+    </div>
+
+    <!-- 3 -->
+    <div class="q">
+      <div class="q-head">문제 3 <span class="tag">인자 전달</span><span class="badge"></span></div>
+      <div class="q-prompt">함수가 원본을 바꿀까요? 출력은?</div>
+      <div class="code">
+<div class="ln">def add_one(lst):</div>
+<div class="ln">    lst.append(1)</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">def replace(lst):</div>
+<div class="ln">    lst = [99]</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">a = []</div>
+<div class="ln">b = []</div>
+<div class="ln">add_one(a)</div>
+<div class="ln">replace(b)</div>
+<div class="ln">print(a, b)</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">[1] [99]</button>
+        <button class="opt" data-correct="true">[1] []</button>
+        <button class="opt" data-correct="false">[] []</button>
+        <button class="opt" data-correct="false">[] [99]</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: [1] [].</span> 두 함수의 차이가 핵심이에요. <code>append</code>는 <b>넘겨받은 객체 자체를 수정</b>하니 밖에서도 보입니다. 반면 <code>lst = [99]</code>는 함수 안의 이름표를 <b>새 리스트로 옮겨 붙이는</b> 것일 뿐, 밖의 b는 원래 객체를 계속 가리켜요. <b>"내용을 바꾸면 전달되고, 이름을 갈아끼우면 전달되지 않는다"</b>가 파이썬 인자 전달의 핵심입니다.</div>
+    </div>
+
+    <div class="part">▚ PART 2 · 반복과 스코프</div>
+    <p class="part-sub">언제 값이 정해지는가.</p>
+
+    <!-- 4 -->
+    <div class="q">
+      <div class="q-head">문제 4 <span class="tag">반복 중 수정</span><span class="badge"></span></div>
+      <div class="q-prompt">짝수를 모두 지우려 했어요. 출력은?</div>
+      <div class="code">
+<div class="ln">nums = [1, 2, 3, 4, 5, 6]</div>
+<div class="ln">for n in nums:</div>
+<div class="ln">    if n % 2 == 0:</div>
+<div class="ln">        nums.remove(n)</div>
+<div class="ln">print(nums)</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">[1, 3, 5]</button>
+        <button class="opt" data-correct="true">[1, 3, 5] 이지만 우연이며, 일반적으론 일부가 남는다</button>
+        <button class="opt" data-correct="false">[2, 4, 6]</button>
+        <button class="opt" data-correct="false">RuntimeError가 난다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> 이 코드는 실제로 <code>[1, 3, 5]</code>를 출력하지만 <b>운이 좋았을 뿐</b>이에요. for문은 내부적으로 <b>위치(인덱스)</b>로 순회하는데, 원소를 지우면 뒤 원소들이 앞으로 당겨져 <b>한 칸씩 건너뛰게</b> 됩니다. 예를 들어 <code>[1,2,4,5]</code>로 해보면 4가 살아남아요. 그래서 <b>반복하는 리스트를 그 안에서 수정하면 안 되고</b>, <code>nums = [n for n in nums if n % 2]</code>처럼 새 리스트를 만들어야 합니다.</div>
+    </div>
+
+    <!-- 5 -->
+    <div class="q">
+      <div class="q-head">문제 5 <span class="tag">늦은 바인딩</span><span class="badge"></span></div>
+      <div class="q-prompt">함수 3개를 만들어 각각 호출했어요. 출력은?</div>
+      <div class="code">
+<div class="ln">fs = [lambda: i for i in range(3)]</div>
+<div class="ln">print([fn() for fn in fs])</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">[0, 1, 2]</button>
+        <button class="opt" data-correct="true">[2, 2, 2]</button>
+        <button class="opt" data-correct="false">[0, 0, 0]</button>
+        <button class="opt" data-correct="false">[None, None, None]</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: [2, 2, 2].</span> lambda 안의 <code>i</code>는 <b>만들 때가 아니라 호출할 때</b> 값을 찾아봐요(늦은 바인딩). 함수들을 다 만든 뒤엔 i가 이미 마지막 값 2가 되어 있어서, 셋 다 2를 돌려줍니다. 해결하려면 <code>lambda i=i: i</code>처럼 <b>기본 인자로 그 순간의 값을 붙잡아</b> 두면 돼요. 반복문 안에서 콜백·이벤트 핸들러를 만들 때 자주 터지는 함정입니다.</div>
+    </div>
+
+    <!-- 6 -->
+    <div class="q">
+      <div class="q-head">문제 6 <span class="tag">스코프</span><span class="badge"></span></div>
+      <div class="q-prompt">출력은?</div>
+      <div class="code">
+<div class="ln">x = 10</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">def f():</div>
+<div class="ln">    x = 20</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">f()</div>
+<div class="ln">print(x)</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">20</button>
+        <button class="opt" data-correct="true">10</button>
+        <button class="opt" data-correct="false">에러가 난다</button>
+        <button class="opt" data-correct="false">None</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 10.</span> 함수 안에서 <code>x = 20</code>이라고 <b>대입</b>하는 순간, 파이썬은 그것을 <b>새로운 지역 변수</b>로 취급해요. 밖의 x와는 이름만 같을 뿐 완전히 별개입니다. 전역 x를 진짜로 바꾸려면 함수 안에 <code>global x</code>를 선언해야 해요. (그런데 전역 변수를 바꾸는 건 추적이 어려워지니, 값을 <code>return</code>으로 돌려주는 편이 낫습니다.)</div>
+    </div>
+
+    <div class="part">▚ PART 3 · 진리값과 자료구조</div>
+    <p class="part-sub">파이썬이 참·거짓을 판단하는 방식.</p>
+
+    <!-- 7 -->
+    <div class="q">
+      <div class="q-head">문제 7 <span class="tag">진리값</span><span class="badge"></span></div>
+      <div class="q-prompt">다음 중 <code>if</code>에서 <b>참(True)</b>으로 취급되는 것은?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false"><code>0.0</code></button>
+        <button class="opt" data-correct="false"><code>[]</code></button>
+        <button class="opt" data-correct="true"><code>"False"</code></button>
+        <button class="opt" data-correct="false"><code>{}</code></button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: "False".</span> 파이썬은 <b>비어 있으면 거짓</b>으로 봐요 — <code>0</code>, <code>0.0</code>, <code>""</code>, <code>[]</code>, <code>{}</code>, <code>None</code>이 모두 거짓입니다. 반면 <code>"False"</code>는 <b>글자가 5개나 든 문자열</b>이라 참이에요. 내용이 "False"라는 건 상관없습니다. 그래서 <code>input()</code>으로 받은 <code>"0"</code>도 참이 되니 주의해야 해요.</div>
+    </div>
+
+    <!-- 8 -->
+    <div class="q">
+      <div class="q-head">문제 8 <span class="tag">or 연산</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>or</code>는 True/False만 돌려줄까요? 출력은?</div>
+      <div class="code">
+<div class="ln">print([] or <span class="str">"기본값"</span>)</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">True</button>
+        <button class="opt" data-correct="true">기본값</button>
+        <button class="opt" data-correct="false">[]</button>
+        <button class="opt" data-correct="false">False</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 기본값.</span> 파이썬의 <code>or</code>는 True/False가 아니라 <b>피연산자 중 하나를 그대로</b> 돌려줘요. 왼쪽이 거짓이면 오른쪽을, 왼쪽이 참이면 왼쪽을 반환합니다. 그래서 <code>name = 입력값 or "손님"</code>처럼 <b>기본값을 주는 관용구</b>로 자주 쓰여요. 단, <code>0</code>이 유효한 값인 경우엔 0도 거짓이라 의도치 않게 기본값으로 넘어가니 주의해야 합니다.</div>
+    </div>
+
+    <!-- 9 -->
+    <div class="q">
+      <div class="q-head">문제 9 <span class="tag">딕셔너리 키</span><span class="badge"></span></div>
+      <div class="q-prompt">키가 3개인 줄 알았는데… 출력은?</div>
+      <div class="code">
+<div class="ln">d = {1: <span class="str">"a"</span>, True: <span class="str">"b"</span>, 1.0: <span class="str">"c"</span>}</div>
+<div class="ln">print(len(d))</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">3</button>
+        <button class="opt" data-correct="false">2</button>
+        <button class="opt" data-correct="true">1</button>
+        <button class="opt" data-correct="false">에러가 난다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 1.</span> 파이썬에서 <code>1 == True == 1.0</code>이 모두 참이고, 딕셔너리는 <b>값이 같으면 같은 키</b>로 취급해요. 그래서 세 번 다 <b>같은 칸에 덮어써져</b> 최종 값은 마지막인 <code>"c"</code>, 길이는 1입니다. <code>True</code>가 내부적으로 정수 1이라는 점이 놀라운 부분이죠 — <code>True + True == 2</code>도 성립합니다.</div>
+    </div>
+
+    <!-- 10 -->
+    <div class="q">
+      <div class="q-head">문제 10 <span class="tag">음수 나눗셈</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>-7 // 2</code> 의 결과는?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">-3</button>
+        <button class="opt" data-correct="true">-4</button>
+        <button class="opt" data-correct="false">-3.5</button>
+        <button class="opt" data-correct="false">3</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: -4.</span> <code>//</code>는 "소수점 버림"이 아니라 <b>더 작은 쪽(음의 무한대 방향)으로 내림</b>이에요. -3.5를 내리면 -3이 아니라 <b>-4</b>가 됩니다. 양수일 땐 둘이 같아서 헷갈리지 않지만, 음수에서 차이가 드러나요. 0쪽으로 자르고 싶다면 <code>int(-7 / 2)</code>를 쓰면 -3이 됩니다.</div>
+    </div>
+
+    <div class="part">▚ PART 4 · 함수와 반환</div>
+    <p class="part-sub">무엇이 돌아오는가.</p>
+
+    <!-- 11 -->
+    <div class="q">
+      <div class="q-head">문제 11 <span class="tag">제자리 연산</span><span class="badge"></span></div>
+      <div class="q-prompt">출력은?</div>
+      <div class="code">
+<div class="ln">nums = [3, 1, 2]</div>
+<div class="ln">result = nums.sort()</div>
+<div class="ln">print(result, nums)</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">[1, 2, 3] [1, 2, 3]</button>
+        <button class="opt" data-correct="true">None [1, 2, 3]</button>
+        <button class="opt" data-correct="false">[1, 2, 3] [3, 1, 2]</button>
+        <button class="opt" data-correct="false">None [3, 1, 2]</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: None [1, 2, 3].</span> <code>.sort()</code>는 리스트를 <b>제자리에서</b> 정렬하고 반환값은 <code>None</code>이에요. 그래서 result엔 None이 담기지만 nums 자체는 정렬됩니다. <code>random.shuffle()</code>, <code>.append()</code>, <code>.reverse()</code>도 같은 패턴이에요. 새 리스트를 받고 싶다면 <code>sorted(nums)</code>를 쓰세요. <b>"제자리에서 바꾸는 것은 None을 돌려준다"</b>가 파이썬의 일관된 규칙입니다.</div>
+    </div>
+
+    <!-- 12 -->
+    <div class="q">
+      <div class="q-head">문제 12 <span class="tag">문자열 불변</span><span class="badge"></span></div>
+      <div class="q-prompt">출력은?</div>
+      <div class="code">
+<div class="ln">s = <span class="str">"hello"</span></div>
+<div class="ln">s.upper()</div>
+<div class="ln">print(s)</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">HELLO</button>
+        <button class="opt" data-correct="true">hello</button>
+        <button class="opt" data-correct="false">에러가 난다</button>
+        <button class="opt" data-correct="false">None</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: hello.</span> 문자열은 <b>불변(immutable)</b>이라 어떤 메서드도 원본을 바꾸지 못해요. <code>upper()</code>는 대문자로 바꾼 <b>새 문자열을 돌려줄 뿐</b>이라, 받아두지 않으면 그냥 버려집니다. <code>s = s.upper()</code>처럼 <b>다시 대입</b>해야 해요. 같은 이유로 <code>s[0] = "H"</code>도 TypeError가 납니다. 리스트(가변)와 정반대라 헷갈리기 쉬워요.</div>
+    </div>
+
+    <div class="btns">
+      <button id="grade" class="btn primary">채점하기</button>
+      <button id="reset" class="btn secondary">다시 풀기</button>
+      <button id="toggle" class="btn link">정답·해설 보기</button>
+    </div>
+    <div id="banner" class="banner" hidden></div>
+    <div class="foot">문제를 눌러 답을 고른 뒤 채점하기를 누르세요.</div>
+  </div>
+
+<script>
+  var questions = Array.prototype.slice.call(document.querySelectorAll('.q'));
+  var shown = false;
+  questions.forEach(function(q){
+    var group = q.querySelector('.choices');
+    if(!group) return;
+    group.querySelectorAll('.opt').forEach(function(opt){
+      opt.addEventListener('click', function(){
+        group.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('sel','ok','bad'); });
+        opt.classList.add('sel');
+        q.classList.remove('ok','bad');
+        var b = q.querySelector('.badge'); if(b){ b.textContent=''; b.className='badge'; }
+      });
+    });
+  });
+  function setExplain(on){
+    shown = on;
+    questions.forEach(function(q){ var ex=q.querySelector('.explain'); if(ex) ex.hidden = !on; });
+    document.getElementById('toggle').textContent = on ? '정답·해설 숨기기' : '정답·해설 보기';
+  }
+  function clearMarks(){
+    questions.forEach(function(q){
+      q.classList.remove('ok','bad');
+      var b=q.querySelector('.badge'); if(b){ b.textContent=''; b.className='badge'; }
+      q.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('ok','bad'); });
+    });
+  }
+  document.getElementById('grade').addEventListener('click', function(){
+    clearMarks();
+    var correct = 0;
+    questions.forEach(function(q){
+      var sel = q.querySelector('.opt.sel');
+      var ok = !!sel && sel.dataset.correct === 'true';
+      if(ok) correct++;
+      q.classList.add(ok ? 'ok' : 'bad');
+      var badge = q.querySelector('.badge');
+      if(badge){ badge.textContent = ok ? '✓ 정답' : '✗ 다시'; badge.className='badge '+(ok?'ok':'bad'); }
+      q.querySelectorAll('.opt').forEach(function(opt){
+        if(opt.dataset.correct === 'true') opt.classList.add('ok');
+        else if(opt.classList.contains('sel')) opt.classList.add('bad');
+      });
+    });
+    setExplain(true);
+    var b = document.getElementById('banner');
+    b.hidden = false;
+    if(correct === questions.length){
+      b.className='banner ok';
+      b.textContent='🎉 '+questions.length+'문제 모두 정답! 동작 원리까지 꿰뚫고 있네요.';
+    } else if(correct >= questions.length - 3){
+      b.className='banner amber';
+      b.textContent=questions.length+'문제 중 '+correct+'개 정답 — 상당한 수준이에요. 틀린 것만 해설로 확인해보세요.';
+    } else {
+      b.className='banner amber';
+      b.textContent=questions.length+'문제 중 '+correct+'개 정답 — 어려운 문제들이니 괜찮아요. 해설이 진짜 공부거리입니다.';
+    }
+  });
+  document.getElementById('toggle').addEventListener('click', function(){ setExplain(!shown); });
+  document.getElementById('reset').addEventListener('click', function(){
+    clearMarks();
+    questions.forEach(function(q){ q.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('sel'); }); });
+    setExplain(false);
+    document.getElementById('banner').hidden = true;
+  });
+</script>
+</body>
+</html>
