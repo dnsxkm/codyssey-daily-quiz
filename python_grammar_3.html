@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>파이썬 심화 개념 퀴즈 — 동작 원리 이해하기</title>
+<title>파이썬 주제별 퀴즈 — 딕셔너리 · 클래스 · self · json · 예외처리</title>
 <style>
   :root{
     --page-bg:#eceef5; --card:#ffffff; --ink:#1f2430; --sub:#5b6472;
@@ -24,7 +24,11 @@
   h1{font-size:22px; font-weight:800; margin:8px 0 6px; line-height:1.3;}
   .intro{font-size:14.5px; line-height:1.7; color:var(--sub); margin:0 0 6px;}
   .intro b{color:var(--ink);}
-  .part{margin-top:26px; margin-bottom:2px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  .toc{background:#f1f5ff; border:1px solid #dfe6fb; border-radius:12px; padding:13px 16px; margin:14px 0 0;}
+  .toc-h{font-size:13.5px; font-weight:800; color:var(--ink); margin-bottom:6px;}
+  .toc ol{margin:0; padding-left:20px; font-size:13.5px; line-height:1.8; color:var(--sub);}
+  .toc code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--ink);}
+  .part{margin-top:28px; margin-bottom:2px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
     font-size:12.5px; font-weight:800; color:var(--accent-dark); letter-spacing:.4px;}
   .part-sub{font-size:13px; color:var(--sub); margin:2px 0 0; line-height:1.6;}
   .code{background:var(--code-bg); border-radius:12px; padding:14px 14px; overflow-x:auto;
@@ -32,6 +36,13 @@
   .ln{white-space:pre; line-height:25px; color:var(--code-ink);}
   .cmt{color:var(--code-cmt); font-style:italic;}
   .str{color:var(--code-str);}
+  .blank{width:12ch; font-family:inherit; font-size:inherit; color:var(--code-ink);
+    background:var(--blank-bg); border:1.5px solid var(--blank-border); border-radius:6px;
+    padding:0 6px; margin:0 2px; text-align:center;}
+  .blank::placeholder{color:#6b7488;}
+  .blank:focus{outline:none; border-color:#818cf8; box-shadow:0 0 0 2px rgba(129,140,248,.30);}
+  .blank.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .blank.bad{border-color:var(--bad); background:var(--bad-bg);}
   .q{border:1px solid #e7e9f0; border-radius:14px; padding:16px; margin-top:12px; background:#fff;}
   .q.ok{border-color:#bbf7d0; background:#f6fef9;}
   .q.bad{border-color:#fecaca; background:#fffafa;}
@@ -64,241 +75,328 @@
   .banner{margin-top:16px; padding:12px 16px; border-radius:10px; font-size:14.5px; font-weight:600;}
   .banner.ok{background:#dcfce7; color:#166534;}
   .banner.amber{background:#fef3c7; color:#b45309;}
+  .score{margin-top:12px; display:none; flex-wrap:wrap; gap:8px;}
+  .score.show{display:flex;}
+  .sc{font-size:12.5px; font-weight:700; padding:6px 12px; border-radius:999px; background:#eef1f8; color:var(--accent-dark);}
   .foot{margin-top:18px; font-size:12.5px; color:var(--code-cmt); text-align:center;}
 </style>
 </head>
 <body>
   <div class="card">
-    <div class="eyebrow"># 파이썬 심화 · 데일리 퀴즈</div>
-    <h1>🔥 동작 원리 파고들기</h1>
-    <p class="intro">문법을 아는 것과 <b>왜 그렇게 동작하는지</b>를 아는 건 다릅니다. 여기 있는 12문제는 경력자도 자주 틀리는 것들이에요 — 객체와 참조, 가변성, 스코프, 진리값 판정. <b>찍으면 거의 틀립니다.</b> 실제로 파이썬에 돌려 검증한 결과만 담았어요.</p>
+    <div class="eyebrow"># 파이썬 주제별 · 데일리 퀴즈</div>
+    <h1>🎯 6가지 주제 집중 공략</h1>
+    <p class="intro">헷갈리기 쉬운 6개 주제를 <b>주제별로 묶어</b> 풀어보는 퀴즈예요. 채점하면 주제별 점수가 따로 나와서, <b>어느 부분이 약한지</b> 바로 알 수 있습니다. 총 <b>17문제</b>.</p>
 
-    <div class="part">▚ PART 1 · 객체와 참조</div>
-    <p class="part-sub">변수는 값을 담는 상자가 아니라, 객체에 붙인 이름표.</p>
+    <div class="toc">
+      <div class="toc-h">📚 다루는 주제</div>
+      <ol>
+        <li>딕셔너리 — 키·값 다루기</li>
+        <li>클래스 / 객체 — 틀과 실물</li>
+        <li><code>self</code> — 이게 왜 필요한가</li>
+        <li><code>self.xxx</code> vs <code>xxx</code> — 결정적 차이</li>
+        <li><code>json</code> — 저장하고 불러오기</li>
+        <li>예외처리 — 안 죽는 프로그램 만들기</li>
+      </ol>
+    </div>
+
+    <div class="part">▚ 주제 1 · 딕셔너리</div>
+    <p class="part-sub">{키: 값} 짝으로 저장하는 그릇.</p>
 
     <!-- 1 -->
-    <div class="q">
-      <div class="q-head">문제 1 <span class="tag">가변성</span><span class="badge"></span></div>
-      <div class="q-prompt">튜플은 수정할 수 없다고 했는데… 출력은?</div>
-      <div class="code">
-<div class="ln">t = ([1, 2], 3)</div>
-<div class="ln">t[0].append(9)</div>
-<div class="ln">print(t)</div>
-      </div>
-      <div class="choices">
-        <button class="opt" data-correct="false">TypeError가 난다</button>
-        <button class="opt" data-correct="true">([1, 2, 9], 3)</button>
-        <button class="opt" data-correct="false">([1, 2], 3)</button>
-        <button class="opt" data-correct="false">([9], 3)</button>
-      </div>
-      <div class="explain" hidden><span class="a">정답: ([1, 2, 9], 3).</span> 튜플이 "못 바꾼다"는 건 <b>어떤 객체를 가리키는지</b>를 못 바꾼다는 뜻이에요. 그 안에 든 리스트 <b>자체</b>는 여전히 가변이라 <code>append</code>가 먹힙니다. 반면 <code>t[1] = 5</code>처럼 <b>칸을 다른 객체로 갈아끼우는</b> 건 TypeError. "튜플은 이름표 목록이 고정될 뿐, 가리키는 대상의 내용까지 얼리지는 않는다"고 기억하세요.</div>
-    </div>
-
-    <!-- 2 -->
-    <div class="q">
-      <div class="q-head">문제 2 <span class="tag">곱셈 복사</span><span class="badge"></span></div>
-      <div class="q-prompt">3×3 격자를 만들려 했어요. 출력은?</div>
-      <div class="code">
-<div class="ln">grid = [[0] * 3] * 3</div>
-<div class="ln">grid[0][0] = 1</div>
-<div class="ln">print(grid)</div>
-      </div>
-      <div class="choices">
-        <button class="opt" data-correct="false">[[1, 0, 0], [0, 0, 0], [0, 0, 0]]</button>
-        <button class="opt" data-correct="true">[[1, 0, 0], [1, 0, 0], [1, 0, 0]]</button>
-        <button class="opt" data-correct="false">[[1, 1, 1], [0, 0, 0], [0, 0, 0]]</button>
-        <button class="opt" data-correct="false">에러가 난다</button>
-      </div>
-      <div class="explain" hidden><span class="a">정답: 세 줄 모두 바뀝니다.</span> 바깥 <code>* 3</code>은 리스트를 <b>세 개 만드는 게 아니라</b>, <b>같은 리스트 하나</b>를 가리키는 이름표를 3개 늘어놓아요. 그래서 한 줄을 고치면 세 줄이 다 바뀐 것처럼 보입니다. 올바른 방법은 <code>[[0]*3 for _ in range(3)]</code> — 컴프리헨션은 매번 <b>새 리스트</b>를 만들어요. 2차원 배열 만들 때 가장 흔한 버그입니다.</div>
-    </div>
-
-    <!-- 3 -->
-    <div class="q">
-      <div class="q-head">문제 3 <span class="tag">인자 전달</span><span class="badge"></span></div>
-      <div class="q-prompt">함수가 원본을 바꿀까요? 출력은?</div>
-      <div class="code">
-<div class="ln">def add_one(lst):</div>
-<div class="ln">    lst.append(1)</div>
-<div class="ln">&nbsp;</div>
-<div class="ln">def replace(lst):</div>
-<div class="ln">    lst = [99]</div>
-<div class="ln">&nbsp;</div>
-<div class="ln">a = []</div>
-<div class="ln">b = []</div>
-<div class="ln">add_one(a)</div>
-<div class="ln">replace(b)</div>
-<div class="ln">print(a, b)</div>
-      </div>
-      <div class="choices">
-        <button class="opt" data-correct="false">[1] [99]</button>
-        <button class="opt" data-correct="true">[1] []</button>
-        <button class="opt" data-correct="false">[] []</button>
-        <button class="opt" data-correct="false">[] [99]</button>
-      </div>
-      <div class="explain" hidden><span class="a">정답: [1] [].</span> 두 함수의 차이가 핵심이에요. <code>append</code>는 <b>넘겨받은 객체 자체를 수정</b>하니 밖에서도 보입니다. 반면 <code>lst = [99]</code>는 함수 안의 이름표를 <b>새 리스트로 옮겨 붙이는</b> 것일 뿐, 밖의 b는 원래 객체를 계속 가리켜요. <b>"내용을 바꾸면 전달되고, 이름을 갈아끼우면 전달되지 않는다"</b>가 파이썬 인자 전달의 핵심입니다.</div>
-    </div>
-
-    <div class="part">▚ PART 2 · 반복과 스코프</div>
-    <p class="part-sub">언제 값이 정해지는가.</p>
-
-    <!-- 4 -->
-    <div class="q">
-      <div class="q-head">문제 4 <span class="tag">반복 중 수정</span><span class="badge"></span></div>
-      <div class="q-prompt">짝수를 모두 지우려 했어요. 출력은?</div>
-      <div class="code">
-<div class="ln">nums = [1, 2, 3, 4, 5, 6]</div>
-<div class="ln">for n in nums:</div>
-<div class="ln">    if n % 2 == 0:</div>
-<div class="ln">        nums.remove(n)</div>
-<div class="ln">print(nums)</div>
-      </div>
-      <div class="choices">
-        <button class="opt" data-correct="false">[1, 3, 5]</button>
-        <button class="opt" data-correct="true">[1, 3, 5] 이지만 우연이며, 일반적으론 일부가 남는다</button>
-        <button class="opt" data-correct="false">[2, 4, 6]</button>
-        <button class="opt" data-correct="false">RuntimeError가 난다</button>
-      </div>
-      <div class="explain" hidden><span class="a">정답: 2번.</span> 이 코드는 실제로 <code>[1, 3, 5]</code>를 출력하지만 <b>운이 좋았을 뿐</b>이에요. for문은 내부적으로 <b>위치(인덱스)</b>로 순회하는데, 원소를 지우면 뒤 원소들이 앞으로 당겨져 <b>한 칸씩 건너뛰게</b> 됩니다. 예를 들어 <code>[1,2,4,5]</code>로 해보면 4가 살아남아요. 그래서 <b>반복하는 리스트를 그 안에서 수정하면 안 되고</b>, <code>nums = [n for n in nums if n % 2]</code>처럼 새 리스트를 만들어야 합니다.</div>
-    </div>
-
-    <!-- 5 -->
-    <div class="q">
-      <div class="q-head">문제 5 <span class="tag">늦은 바인딩</span><span class="badge"></span></div>
-      <div class="q-prompt">함수 3개를 만들어 각각 호출했어요. 출력은?</div>
-      <div class="code">
-<div class="ln">fs = [lambda: i for i in range(3)]</div>
-<div class="ln">print([fn() for fn in fs])</div>
-      </div>
-      <div class="choices">
-        <button class="opt" data-correct="false">[0, 1, 2]</button>
-        <button class="opt" data-correct="true">[2, 2, 2]</button>
-        <button class="opt" data-correct="false">[0, 0, 0]</button>
-        <button class="opt" data-correct="false">[None, None, None]</button>
-      </div>
-      <div class="explain" hidden><span class="a">정답: [2, 2, 2].</span> lambda 안의 <code>i</code>는 <b>만들 때가 아니라 호출할 때</b> 값을 찾아봐요(늦은 바인딩). 함수들을 다 만든 뒤엔 i가 이미 마지막 값 2가 되어 있어서, 셋 다 2를 돌려줍니다. 해결하려면 <code>lambda i=i: i</code>처럼 <b>기본 인자로 그 순간의 값을 붙잡아</b> 두면 돼요. 반복문 안에서 콜백·이벤트 핸들러를 만들 때 자주 터지는 함정입니다.</div>
-    </div>
-
-    <!-- 6 -->
-    <div class="q">
-      <div class="q-head">문제 6 <span class="tag">스코프</span><span class="badge"></span></div>
+    <div class="q" data-topic="딕셔너리">
+      <div class="q-head">문제 1 <span class="tag">기본</span><span class="badge"></span></div>
       <div class="q-prompt">출력은?</div>
       <div class="code">
-<div class="ln">x = 10</div>
-<div class="ln">&nbsp;</div>
-<div class="ln">def f():</div>
-<div class="ln">    x = 20</div>
-<div class="ln">&nbsp;</div>
-<div class="ln">f()</div>
-<div class="ln">print(x)</div>
-      </div>
-      <div class="choices">
-        <button class="opt" data-correct="false">20</button>
-        <button class="opt" data-correct="true">10</button>
-        <button class="opt" data-correct="false">에러가 난다</button>
-        <button class="opt" data-correct="false">None</button>
-      </div>
-      <div class="explain" hidden><span class="a">정답: 10.</span> 함수 안에서 <code>x = 20</code>이라고 <b>대입</b>하는 순간, 파이썬은 그것을 <b>새로운 지역 변수</b>로 취급해요. 밖의 x와는 이름만 같을 뿐 완전히 별개입니다. 전역 x를 진짜로 바꾸려면 함수 안에 <code>global x</code>를 선언해야 해요. (그런데 전역 변수를 바꾸는 건 추적이 어려워지니, 값을 <code>return</code>으로 돌려주는 편이 낫습니다.)</div>
-    </div>
-
-    <div class="part">▚ PART 3 · 진리값과 자료구조</div>
-    <p class="part-sub">파이썬이 참·거짓을 판단하는 방식.</p>
-
-    <!-- 7 -->
-    <div class="q">
-      <div class="q-head">문제 7 <span class="tag">진리값</span><span class="badge"></span></div>
-      <div class="q-prompt">다음 중 <code>if</code>에서 <b>참(True)</b>으로 취급되는 것은?</div>
-      <div class="choices">
-        <button class="opt" data-correct="false"><code>0.0</code></button>
-        <button class="opt" data-correct="false"><code>[]</code></button>
-        <button class="opt" data-correct="true"><code>"False"</code></button>
-        <button class="opt" data-correct="false"><code>{}</code></button>
-      </div>
-      <div class="explain" hidden><span class="a">정답: "False".</span> 파이썬은 <b>비어 있으면 거짓</b>으로 봐요 — <code>0</code>, <code>0.0</code>, <code>""</code>, <code>[]</code>, <code>{}</code>, <code>None</code>이 모두 거짓입니다. 반면 <code>"False"</code>는 <b>글자가 5개나 든 문자열</b>이라 참이에요. 내용이 "False"라는 건 상관없습니다. 그래서 <code>input()</code>으로 받은 <code>"0"</code>도 참이 되니 주의해야 해요.</div>
-    </div>
-
-    <!-- 8 -->
-    <div class="q">
-      <div class="q-head">문제 8 <span class="tag">or 연산</span><span class="badge"></span></div>
-      <div class="q-prompt"><code>or</code>는 True/False만 돌려줄까요? 출력은?</div>
-      <div class="code">
-<div class="ln">print([] or <span class="str">"기본값"</span>)</div>
-      </div>
-      <div class="choices">
-        <button class="opt" data-correct="false">True</button>
-        <button class="opt" data-correct="true">기본값</button>
-        <button class="opt" data-correct="false">[]</button>
-        <button class="opt" data-correct="false">False</button>
-      </div>
-      <div class="explain" hidden><span class="a">정답: 기본값.</span> 파이썬의 <code>or</code>는 True/False가 아니라 <b>피연산자 중 하나를 그대로</b> 돌려줘요. 왼쪽이 거짓이면 오른쪽을, 왼쪽이 참이면 왼쪽을 반환합니다. 그래서 <code>name = 입력값 or "손님"</code>처럼 <b>기본값을 주는 관용구</b>로 자주 쓰여요. 단, <code>0</code>이 유효한 값인 경우엔 0도 거짓이라 의도치 않게 기본값으로 넘어가니 주의해야 합니다.</div>
-    </div>
-
-    <!-- 9 -->
-    <div class="q">
-      <div class="q-head">문제 9 <span class="tag">딕셔너리 키</span><span class="badge"></span></div>
-      <div class="q-prompt">키가 3개인 줄 알았는데… 출력은?</div>
-      <div class="code">
-<div class="ln">d = {1: <span class="str">"a"</span>, True: <span class="str">"b"</span>, 1.0: <span class="str">"c"</span>}</div>
+<div class="ln">d = {<span class="str">"a"</span>: 1, <span class="str">"b"</span>: 2}</div>
+<div class="ln">d[<span class="str">"a"</span>] = 9</div>
+<div class="ln">d[<span class="str">"c"</span>] = 3</div>
 <div class="ln">print(len(d))</div>
       </div>
       <div class="choices">
-        <button class="opt" data-correct="false">3</button>
         <button class="opt" data-correct="false">2</button>
-        <button class="opt" data-correct="true">1</button>
+        <button class="opt" data-correct="true">3</button>
+        <button class="opt" data-correct="false">4</button>
         <button class="opt" data-correct="false">에러가 난다</button>
       </div>
-      <div class="explain" hidden><span class="a">정답: 1.</span> 파이썬에서 <code>1 == True == 1.0</code>이 모두 참이고, 딕셔너리는 <b>값이 같으면 같은 키</b>로 취급해요. 그래서 세 번 다 <b>같은 칸에 덮어써져</b> 최종 값은 마지막인 <code>"c"</code>, 길이는 1입니다. <code>True</code>가 내부적으로 정수 1이라는 점이 놀라운 부분이죠 — <code>True + True == 2</code>도 성립합니다.</div>
+      <div class="explain" hidden><span class="a">정답: 3.</span> 딕셔너리에서 대괄호 대입은 <b>키가 있으면 덮어쓰고, 없으면 새로 만들어요</b>. <code>d["a"] = 9</code>는 이미 있는 키라 값만 1→9로 바뀌고 개수는 그대로. <code>d["c"] = 3</code>은 새 키라 하나 늘어나서 최종 3개입니다.</div>
+    </div>
+
+    <!-- 2 -->
+    <div class="q" data-topic="딕셔너리">
+      <div class="q-head">문제 2 <span class="tag">get</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>d = {"a": 1}</code> 일 때 <b>없는 키</b>를 꺼내는 두 방법의 차이는?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">둘 다 None을 돌려준다</button>
+        <button class="opt" data-correct="true"><code>d["z"]</code>는 KeyError, <code>d.get("z")</code>는 None</button>
+        <button class="opt" data-correct="false"><code>d["z"]</code>는 None, <code>d.get("z")</code>는 KeyError</button>
+        <button class="opt" data-correct="false">둘 다 KeyError가 난다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> 대괄호는 없는 키에 <b>엄격</b>해서 KeyError로 프로그램이 멈춰요. <code>.get()</code>은 <b>관대</b>해서 None을 돌려주고, <code>d.get("z", 0)</code>처럼 기본값도 지정할 수 있습니다. "반드시 있어야 하는 키"엔 대괄호를, "없을 수도 있는 키"엔 get을 쓰면 됩니다.</div>
+    </div>
+
+    <!-- 3 -->
+    <div class="q" data-topic="딕셔너리">
+      <div class="q-head">문제 3 <span class="tag">개수 세기</span><span class="badge"></span></div>
+      <div class="q-prompt">글자 개수를 세는 코드예요. 빈칸에 들어갈 것은?</div>
+      <div class="code">
+<div class="ln">count = {}</div>
+<div class="ln">for ch in <span class="str">"hello"</span>:</div>
+<div class="ln">    count[ch] = count.<input class="blank js-input" data-answer="get" placeholder="___" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸1">(ch, 0) + 1</div>
+<div class="ln">print(count)   <span class="cmt"># {'h':1,'e':1,'l':2,'o':1}</span></div>
+      </div>
+      <div class="explain" hidden><span class="a">정답: get.</span> 처음 보는 글자는 아직 키가 없어서 <code>count[ch]</code>로 바로 읽으면 KeyError가 나요. <code>get(ch, 0)</code>은 없으면 <b>0에서 시작</b>하게 해줍니다. 그래서 첫 등장은 0+1=1, 두 번째 등장은 1+1=2가 되죠. <b>개수 세기의 정석 관용구</b>라 외워두면 좋아요.</div>
+    </div>
+
+    <div class="part">▚ 주제 2 · 클래스 / 객체</div>
+    <p class="part-sub">틀(class)로 실물(객체)을 찍어낸다.</p>
+
+    <!-- 4 -->
+    <div class="q" data-topic="클래스">
+      <div class="q-head">문제 4 <span class="tag">개념</span><span class="badge"></span></div>
+      <div class="q-prompt"><b>클래스</b>와 <b>객체(인스턴스)</b>의 관계로 가장 알맞은 비유는?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">클래스는 완성품, 객체는 설계도</button>
+        <button class="opt" data-correct="true">클래스는 붕어빵 틀, 객체는 구워진 붕어빵</button>
+        <button class="opt" data-correct="false">둘은 같은 말이다</button>
+        <button class="opt" data-correct="false">객체 하나당 클래스도 하나씩 새로 생긴다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> <code>class Dog:</code>는 <b>설계도</b>일 뿐 실물이 아니에요. <code>a = Dog("초코")</code>라고 해야 비로소 객체가 만들어집니다. 틀 하나로 붕어빵을 여러 개 찍듯, <b>클래스 하나로 객체를 여러 개</b> 만들 수 있고 각각은 서로 다른 값을 가져요.</div>
+    </div>
+
+    <!-- 5 -->
+    <div class="q" data-topic="클래스">
+      <div class="q-head">문제 5 <span class="tag">__init__</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>__init__</code> 메서드에 대한 설명으로 옳은 것은?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">객체를 삭제할 때 실행된다</button>
+        <button class="opt" data-correct="true">객체를 만들 때 자동으로 한 번 실행된다</button>
+        <button class="opt" data-correct="false">직접 <code>obj.__init__()</code>이라고 불러야 실행된다</button>
+        <button class="opt" data-correct="false">클래스마다 반드시 있어야 한다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> <code>Dog("초코")</code>라고 쓰는 순간 파이썬이 <b>알아서</b> <code>__init__</code>을 실행해 초기 상태를 준비해요. 그래서 <b>생성자</b>라고 부릅니다. 없어도 클래스는 만들어지지만, 그러면 객체마다 다른 값을 넣어줄 수 없어요.</div>
+    </div>
+
+    <!-- 6 -->
+    <div class="q" data-topic="클래스">
+      <div class="q-head">문제 6 <span class="tag">출력 예측</span><span class="badge"></span></div>
+      <div class="q-prompt">객체 두 개를 만들었어요. 출력은?</div>
+      <div class="code">
+<div class="ln">class Dog:</div>
+<div class="ln">    def __init__(self, name):</div>
+<div class="ln">        self.name = name</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">a = Dog(<span class="str">"초코"</span>)</div>
+<div class="ln">b = Dog(<span class="str">"보리"</span>)</div>
+<div class="ln">print(a.name, b.name)</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">보리 보리</button>
+        <button class="opt" data-correct="true">초코 보리</button>
+        <button class="opt" data-correct="false">초코 초코</button>
+        <button class="opt" data-correct="false">에러가 난다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 초코 보리.</span> <code>self.name</code>은 <b>객체마다 따로</b> 저장되는 값(인스턴스 속성)이에요. a와 b는 같은 클래스로 만들었어도 완전히 별개의 객체라, 각자의 이름을 갖습니다. 이게 클래스를 쓰는 핵심 이유예요 — <b>같은 구조, 다른 데이터</b>.</div>
+    </div>
+
+    <div class="part">▚ 주제 3 · self</div>
+    <p class="part-sub">"이 객체 자신"을 가리키는 이름.</p>
+
+    <!-- 7 -->
+    <div class="q" data-topic="self">
+      <div class="q-head">문제 7 <span class="tag">개념</span><span class="badge"></span></div>
+      <div class="q-prompt">메서드의 첫 번째 매개변수 <code>self</code>는 무엇을 가리킬까요?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">클래스 자체</button>
+        <button class="opt" data-correct="true">그 메서드를 호출한 객체 자신</button>
+        <button class="opt" data-correct="false">아무것도 아니며 그냥 관례상 쓰는 글자</button>
+        <button class="opt" data-correct="false">부모 클래스</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> <code>a.bark()</code>라고 쓰면 파이썬이 내부적으로 <code>Dog.bark(a)</code>처럼 <b>a를 self 자리에 넣어</b>줘요. 그래서 메서드 안에서 <code>self.name</code>이라고 하면 "지금 이 객체의 이름"이 됩니다. 이름이 꼭 self여야 하는 건 아니지만, <b>모두가 그렇게 쓰는 약속</b>이라 지키는 게 좋아요.</div>
+    </div>
+
+    <!-- 8 -->
+    <div class="q" data-topic="self">
+      <div class="q-head">문제 8 <span class="tag">함정</span><span class="badge"></span></div>
+      <div class="q-prompt">self를 빼먹었어요. 실행하면?</div>
+      <div class="code">
+<div class="ln">class Cat:</div>
+<div class="ln">    def meow():</div>
+<div class="ln">        print(<span class="str">"야옹"</span>)</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">Cat().meow()</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">야옹 이 출력된다</button>
+        <button class="opt" data-correct="true">TypeError — 0개를 받는데 1개가 전달됐다</button>
+        <button class="opt" data-correct="false">NameError가 난다</button>
+        <button class="opt" data-correct="false">아무 일도 없다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: TypeError.</span> <code>Cat().meow()</code>는 인자를 안 넘긴 것처럼 보이지만, 파이썬이 <b>자동으로 객체 자신을 첫 인자로</b> 넣어줘요. meow()는 매개변수를 하나도 안 받게 정의됐으니 "0개를 받는데 1개가 왔다"며 오류가 납니다. 그래서 메서드엔 항상 <code>self</code>를 적어야 해요.</div>
+    </div>
+
+    <div class="part">▚ 주제 4 · self.xxx vs xxx</div>
+    <p class="part-sub">점 하나 차이가 만드는 결과.</p>
+
+    <!-- 9 -->
+    <div class="q" data-topic="self.xxx">
+      <div class="q-head">문제 9 <span class="tag">함정</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>self.</code>를 빠뜨렸어요. 실행하면?</div>
+      <div class="code">
+<div class="ln">class Counter:</div>
+<div class="ln">    def __init__(self):</div>
+<div class="ln">        count = 0        <span class="cmt"># self. 없음!</span></div>
+<div class="ln">&nbsp;</div>
+<div class="ln">    def bump(self):</div>
+<div class="ln">        self.count += 1</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">c = Counter()</div>
+<div class="ln">c.bump()</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">count가 1이 된다</button>
+        <button class="opt" data-correct="true">AttributeError — 그런 속성이 없다</button>
+        <button class="opt" data-correct="false">NameError가 난다</button>
+        <button class="opt" data-correct="false">에러 없이 0으로 유지된다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: AttributeError.</span> <code>__init__</code> 안의 <code>count = 0</code>은 그냥 <b>지역 변수</b>라, 함수가 끝나면 사라져요. 객체엔 아무것도 저장되지 않습니다. 그래서 <code>bump()</code>에서 <code>self.count</code>를 찾을 때 "그런 속성 없음"이라며 오류가 나요. <code>self.count = 0</code>으로 고쳐야 합니다.</div>
     </div>
 
     <!-- 10 -->
-    <div class="q">
-      <div class="q-head">문제 10 <span class="tag">음수 나눗셈</span><span class="badge"></span></div>
-      <div class="q-prompt"><code>-7 // 2</code> 의 결과는?</div>
-      <div class="choices">
-        <button class="opt" data-correct="false">-3</button>
-        <button class="opt" data-correct="true">-4</button>
-        <button class="opt" data-correct="false">-3.5</button>
-        <button class="opt" data-correct="false">3</button>
+    <div class="q" data-topic="self.xxx">
+      <div class="q-head">문제 10 <span class="tag">빈칸</span><span class="badge"></span></div>
+      <div class="q-prompt">두 빈칸에 각각 <code>name</code> 과 <code>self.name</code> 중 알맞은 것을 쓰세요.</div>
+      <div class="code">
+<div class="ln">class Person:</div>
+<div class="ln">    def __init__(self, name):</div>
+<div class="ln">        self.name = <input class="blank js-input" data-answer="name" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸1"></div>
+<div class="ln">&nbsp;</div>
+<div class="ln">    def greet(self):</div>
+<div class="ln">        return <span class="str">"안녕, "</span> + <input class="blank js-input" data-answer="self.name" placeholder="_________" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸2"></div>
       </div>
-      <div class="explain" hidden><span class="a">정답: -4.</span> <code>//</code>는 "소수점 버림"이 아니라 <b>더 작은 쪽(음의 무한대 방향)으로 내림</b>이에요. -3.5를 내리면 -3이 아니라 <b>-4</b>가 됩니다. 양수일 땐 둘이 같아서 헷갈리지 않지만, 음수에서 차이가 드러나요. 0쪽으로 자르고 싶다면 <code>int(-7 / 2)</code>를 쓰면 -3이 됩니다.</div>
+      <div class="explain" hidden><span class="a">정답: name, self.name.</span> 첫 번째는 밖에서 <b>받은 매개변수</b> name을 객체에 저장하는 자리예요 — 오른쪽에 self.name을 쓰면 아직 없는 값을 참조해 에러가 납니다. 두 번째 greet()에는 name이라는 지역 변수가 없으니, 저장해둔 <code>self.name</code>을 꺼내 써야 해요. <b>"받을 땐 name, 꺼낼 땐 self.name"</b>으로 기억하세요.</div>
     </div>
-
-    <div class="part">▚ PART 4 · 함수와 반환</div>
-    <p class="part-sub">무엇이 돌아오는가.</p>
 
     <!-- 11 -->
-    <div class="q">
-      <div class="q-head">문제 11 <span class="tag">제자리 연산</span><span class="badge"></span></div>
-      <div class="q-prompt">출력은?</div>
+    <div class="q" data-topic="self.xxx">
+      <div class="q-head">문제 11 <span class="tag">클래스 속성</span><span class="badge"></span></div>
+      <div class="q-prompt">클래스 몸통에 쓴 것과 <code>self.</code>로 만든 것의 차이는? 출력은?</div>
       <div class="code">
-<div class="ln">nums = [3, 1, 2]</div>
-<div class="ln">result = nums.sort()</div>
-<div class="ln">print(result, nums)</div>
+<div class="ln">class Box:</div>
+<div class="ln">    shared = []</div>
+<div class="ln">    def __init__(self):</div>
+<div class="ln">        self.own = []</div>
+<div class="ln">&nbsp;</div>
+<div class="ln">a = Box(); b = Box()</div>
+<div class="ln">a.shared.append(1)</div>
+<div class="ln">a.own.append(1)</div>
+<div class="ln">print(b.shared, b.own)</div>
       </div>
       <div class="choices">
-        <button class="opt" data-correct="false">[1, 2, 3] [1, 2, 3]</button>
-        <button class="opt" data-correct="true">None [1, 2, 3]</button>
-        <button class="opt" data-correct="false">[1, 2, 3] [3, 1, 2]</button>
-        <button class="opt" data-correct="false">None [3, 1, 2]</button>
+        <button class="opt" data-correct="false">[] []</button>
+        <button class="opt" data-correct="true">[1] []</button>
+        <button class="opt" data-correct="false">[1] [1]</button>
+        <button class="opt" data-correct="false">[] [1]</button>
       </div>
-      <div class="explain" hidden><span class="a">정답: None [1, 2, 3].</span> <code>.sort()</code>는 리스트를 <b>제자리에서</b> 정렬하고 반환값은 <code>None</code>이에요. 그래서 result엔 None이 담기지만 nums 자체는 정렬됩니다. <code>random.shuffle()</code>, <code>.append()</code>, <code>.reverse()</code>도 같은 패턴이에요. 새 리스트를 받고 싶다면 <code>sorted(nums)</code>를 쓰세요. <b>"제자리에서 바꾸는 것은 None을 돌려준다"</b>가 파이썬의 일관된 규칙입니다.</div>
+      <div class="explain" hidden><span class="a">정답: [1] [].</span> <code>shared</code>는 클래스에 하나만 있어서 <b>모든 객체가 같이</b> 씁니다. a가 넣은 1이 b에도 보이죠. 반면 <code>self.own</code>은 <code>__init__</code>에서 <b>객체마다 새로</b> 만들어지니 b의 것은 여전히 비어 있어요. 객체별로 따로 관리할 값이면 반드시 <code>self.</code>를 붙여야 합니다.</div>
     </div>
 
+    <div class="part">▚ 주제 5 · json</div>
+    <p class="part-sub">파이썬 데이터를 파일로, 파일을 다시 데이터로.</p>
+
     <!-- 12 -->
-    <div class="q">
-      <div class="q-head">문제 12 <span class="tag">문자열 불변</span><span class="badge"></span></div>
-      <div class="q-prompt">출력은?</div>
+    <div class="q" data-topic="json">
+      <div class="q-head">문제 12 <span class="tag">4가지 함수</span><span class="badge"></span></div>
+      <div class="q-prompt">파이썬 딕셔너리를 <b>파일에 저장</b>할 때 쓰는 함수는?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false"><code>json.load(f)</code></button>
+        <button class="opt" data-correct="true"><code>json.dump(data, f)</code></button>
+        <button class="opt" data-correct="false"><code>json.loads(s)</code></button>
+        <button class="opt" data-correct="false"><code>json.write(data)</code></button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: json.dump(data, f).</span> 네 가지를 표로 외우면 편해요 — <b>파일</b>에 쓰기는 <code>dump</code>, 파일에서 읽기는 <code>load</code>. <b>문자열</b>로 바꾸기는 <code>dumps</code>, 문자열에서 읽기는 <code>loads</code>. <b>s가 붙으면 string(문자열)</b>이라고 기억하면 헷갈리지 않습니다.</div>
+    </div>
+
+    <!-- 13 -->
+    <div class="q" data-topic="json">
+      <div class="q-head">문제 13 <span class="tag">한글</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>json.dumps({"n": "민수"})</code> 의 결과는?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">{"n": "민수"}</button>
+        <button class="opt" data-correct="true">{"n": "\u5c11\u6570..."} 처럼 한글이 코드로 바뀐다</button>
+        <button class="opt" data-correct="false">에러가 난다</button>
+        <button class="opt" data-correct="false">{"n": ""}</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번 — 한글이 <code>\uXXXX</code> 형태로 바뀝니다.</span> json은 기본적으로 <b>아스키(영문)로만</b> 저장하려 해서 한글을 코드로 변환해요. 읽을 때는 정상으로 돌아오지만 파일을 열어보면 알아볼 수 없죠. <code>json.dumps(data, ensure_ascii=False)</code>를 주면 <b>한글 그대로</b> 저장됩니다. 한글 데이터를 다룬다면 거의 항상 붙여야 하는 옵션이에요.</div>
+    </div>
+
+    <!-- 14 -->
+    <div class="q" data-topic="json">
+      <div class="q-head">문제 14 <span class="tag">자료형 변화</span><span class="badge"></span></div>
+      <div class="q-prompt">튜플을 저장했다가 다시 불러오면 어떤 자료형이 될까요?</div>
       <div class="code">
-<div class="ln">s = <span class="str">"hello"</span></div>
-<div class="ln">s.upper()</div>
-<div class="ln">print(s)</div>
+<div class="ln">s = json.dumps({<span class="str">"t"</span>: (1, 2)})</div>
+<div class="ln">back = json.loads(s)</div>
+<div class="ln">print(back)</div>
       </div>
       <div class="choices">
-        <button class="opt" data-correct="false">HELLO</button>
-        <button class="opt" data-correct="true">hello</button>
+        <button class="opt" data-correct="false">{'t': (1, 2)} — 튜플 그대로</button>
+        <button class="opt" data-correct="true">{'t': [1, 2]} — 리스트로 바뀐다</button>
         <button class="opt" data-correct="false">에러가 난다</button>
-        <button class="opt" data-correct="false">None</button>
+        <button class="opt" data-correct="false">{'t': '(1, 2)'} — 문자열이 된다</button>
       </div>
-      <div class="explain" hidden><span class="a">정답: hello.</span> 문자열은 <b>불변(immutable)</b>이라 어떤 메서드도 원본을 바꾸지 못해요. <code>upper()</code>는 대문자로 바꾼 <b>새 문자열을 돌려줄 뿐</b>이라, 받아두지 않으면 그냥 버려집니다. <code>s = s.upper()</code>처럼 <b>다시 대입</b>해야 해요. 같은 이유로 <code>s[0] = "H"</code>도 TypeError가 납니다. 리스트(가변)와 정반대라 헷갈리기 쉬워요.</div>
+      <div class="explain" hidden><span class="a">정답: 리스트로 바뀝니다.</span> JSON에는 <b>튜플이라는 개념이 없어요</b>. 그래서 저장할 때 배열(리스트)로 바뀌고, 다시 읽으면 리스트로 돌아옵니다. 같은 이유로 <b>딕셔너리의 정수 키도 문자열</b>이 돼요 (<code>{1:"a"}</code> → <code>{"1":"a"}</code>). 저장 후 자료형이 달라질 수 있다는 걸 알아두면 버그를 예방할 수 있어요.</div>
+    </div>
+
+    <div class="part">▚ 주제 6 · 예외처리</div>
+    <p class="part-sub">오류가 나도 죽지 않는 프로그램.</p>
+
+    <!-- 15 -->
+    <div class="q" data-topic="예외처리">
+      <div class="q-head">문제 15 <span class="tag">출력 예측</span><span class="badge"></span></div>
+      <div class="q-prompt">출력 순서는?</div>
+      <div class="code">
+<div class="ln">try:</div>
+<div class="ln">    x = int(<span class="str">"5"</span>)</div>
+<div class="ln">except ValueError:</div>
+<div class="ln">    print(<span class="str">"A"</span>)</div>
+<div class="ln">else:</div>
+<div class="ln">    print(<span class="str">"B"</span>)</div>
+<div class="ln">finally:</div>
+<div class="ln">    print(<span class="str">"C"</span>)</div>
+      </div>
+      <div class="choices">
+        <button class="opt" data-correct="false">A 다음 C</button>
+        <button class="opt" data-correct="true">B 다음 C</button>
+        <button class="opt" data-correct="false">B 만</button>
+        <button class="opt" data-correct="false">A, B, C 전부</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: B 다음 C.</span> <code>int("5")</code>는 성공하니 <code>except</code>는 건너뜁니다. <code>else</code>는 <b>예외가 안 났을 때만</b> 실행돼서 "B", <code>finally</code>는 <b>예외가 나든 안 나든 항상</b> 실행돼서 "C". 만약 <code>int("abc")</code>였다면 A와 C가 나왔을 거예요. finally는 파일 닫기처럼 <b>무슨 일이 있어도 해야 할 뒷정리</b>에 씁니다.</div>
+    </div>
+
+    <!-- 16 -->
+    <div class="q" data-topic="예외처리">
+      <div class="q-head">문제 16 <span class="tag">구체적 예외</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>except Exception:</code> 으로 <b>모든 예외를 한꺼번에</b> 잡으면 안 되는 이유는?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">속도가 느려져서</button>
+        <button class="opt" data-correct="true">오타 같은 예상 못 한 버그까지 삼켜서 원인을 못 찾게 되어서</button>
+        <button class="opt" data-correct="false">문법 오류라서</button>
+        <button class="opt" data-correct="false">예외를 하나만 잡을 수 있어서</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> 넓게 잡으면 <b>처리하려던 오류</b>뿐 아니라 변수명 오타(NameError) 같은 <b>진짜 버그</b>까지 조용히 묻혀요. 프로그램은 안 죽지만 잘못된 결과가 나오고, 원인 찾기가 훨씬 어려워집니다. <code>ValueError</code>, <code>KeyError</code>처럼 <b>예상되는 것만 콕 집어</b> 잡는 게 안전해요.</div>
+    </div>
+
+    <!-- 17 -->
+    <div class="q" data-topic="예외처리">
+      <div class="q-head">문제 17 <span class="tag">예외 짝짓기</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>int("abc")</code> 를 실행하면 발생하는 예외는?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">TypeError</button>
+        <button class="opt" data-correct="true">ValueError</button>
+        <button class="opt" data-correct="false">KeyError</button>
+        <button class="opt" data-correct="false">NameError</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: ValueError.</span> <b>타입은 맞는데(문자열) 값이 이상할 때</b> 나는 오류예요. 반대로 <code>"3" + 3</code>처럼 <b>타입 자체가 안 맞으면</b> TypeError입니다. 자주 만나는 것들을 짝지어 두면 좋아요 — 없는 키는 <code>KeyError</code>, 없는 파일은 <code>FileNotFoundError</code>, 0으로 나누면 <code>ZeroDivisionError</code>, 범위 밖 인덱스는 <code>IndexError</code>.</div>
     </div>
 
     <div class="btns">
@@ -307,12 +405,18 @@
       <button id="toggle" class="btn link">정답·해설 보기</button>
     </div>
     <div id="banner" class="banner" hidden></div>
-    <div class="foot">문제를 눌러 답을 고른 뒤 채점하기를 누르세요.</div>
+    <div id="score" class="score"></div>
+    <div class="foot">주제별 점수가 함께 표시돼요. 빈칸은 대소문자·공백 무관.</div>
   </div>
 
 <script>
   var questions = Array.prototype.slice.call(document.querySelectorAll('.q'));
   var shown = false;
+  function norm(s){ return (s||'').replace(/\s+/g,'').toLowerCase(); }
+  function matches(inp){
+    var v = norm(inp.value);
+    return (inp.dataset.answer||'').split('|').some(function(a){ return norm(a)===v; });
+  }
   questions.forEach(function(q){
     var group = q.querySelector('.choices');
     if(!group) return;
@@ -321,13 +425,22 @@
         group.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('sel','ok','bad'); });
         opt.classList.add('sel');
         q.classList.remove('ok','bad');
-        var b = q.querySelector('.badge'); if(b){ b.textContent=''; b.className='badge'; }
+        var b=q.querySelector('.badge'); if(b){ b.textContent=''; b.className='badge'; }
       });
     });
   });
+  function isCorrect(q){
+    var group = q.querySelector('.choices');
+    if(group){
+      var sel = group.querySelector('.opt.sel');
+      return !!sel && sel.dataset.correct === 'true';
+    }
+    var ins = Array.prototype.slice.call(q.querySelectorAll('.js-input'));
+    return ins.length > 0 && ins.every(matches);
+  }
   function setExplain(on){
     shown = on;
-    questions.forEach(function(q){ var ex=q.querySelector('.explain'); if(ex) ex.hidden = !on; });
+    questions.forEach(function(q){ var ex=q.querySelector('.explain'); if(ex) ex.hidden=!on; });
     document.getElementById('toggle').textContent = on ? '정답·해설 숨기기' : '정답·해설 보기';
   }
   function clearMarks(){
@@ -335,15 +448,19 @@
       q.classList.remove('ok','bad');
       var b=q.querySelector('.badge'); if(b){ b.textContent=''; b.className='badge'; }
       q.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('ok','bad'); });
+      q.querySelectorAll('.js-input').forEach(function(i){ i.classList.remove('ok','bad'); });
     });
+    document.getElementById('score').classList.remove('show');
   }
   document.getElementById('grade').addEventListener('click', function(){
     clearMarks();
-    var correct = 0;
+    var correct = 0, byTopic = {};
     questions.forEach(function(q){
-      var sel = q.querySelector('.opt.sel');
-      var ok = !!sel && sel.dataset.correct === 'true';
-      if(ok) correct++;
+      var t = q.dataset.topic || '기타';
+      if(!byTopic[t]) byTopic[t] = {c:0, n:0};
+      byTopic[t].n++;
+      var ok = isCorrect(q);
+      if(ok){ correct++; byTopic[t].c++; }
       q.classList.add(ok ? 'ok' : 'bad');
       var badge = q.querySelector('.badge');
       if(badge){ badge.textContent = ok ? '✓ 정답' : '✗ 다시'; badge.className='badge '+(ok?'ok':'bad'); }
@@ -351,25 +468,38 @@
         if(opt.dataset.correct === 'true') opt.classList.add('ok');
         else if(opt.classList.contains('sel')) opt.classList.add('bad');
       });
+      q.querySelectorAll('.js-input').forEach(function(i){ i.classList.add(matches(i)?'ok':'bad'); });
     });
     setExplain(true);
     var b = document.getElementById('banner');
     b.hidden = false;
     if(correct === questions.length){
       b.className='banner ok';
-      b.textContent='🎉 '+questions.length+'문제 모두 정답! 동작 원리까지 꿰뚫고 있네요.';
-    } else if(correct >= questions.length - 3){
-      b.className='banner amber';
-      b.textContent=questions.length+'문제 중 '+correct+'개 정답 — 상당한 수준이에요. 틀린 것만 해설로 확인해보세요.';
+      b.textContent='🎉 '+questions.length+'문제 모두 정답! 6개 주제 완전 정복이에요.';
     } else {
       b.className='banner amber';
-      b.textContent=questions.length+'문제 중 '+correct+'개 정답 — 어려운 문제들이니 괜찮아요. 해설이 진짜 공부거리입니다.';
+      b.textContent=questions.length+'문제 중 '+correct+'개 정답 — 아래 주제별 점수에서 약한 곳을 확인해보세요.';
     }
+    var sc = document.getElementById('score');
+    sc.innerHTML = '';
+    Object.keys(byTopic).forEach(function(t){
+      var v = byTopic[t];
+      var el = document.createElement('span');
+      el.className = 'sc';
+      el.textContent = t + ' ' + v.c + '/' + v.n;
+      el.style.background = (v.c === v.n) ? '#dcfce7' : '#fef3c7';
+      el.style.color = (v.c === v.n) ? '#166534' : '#b45309';
+      sc.appendChild(el);
+    });
+    sc.classList.add('show');
   });
   document.getElementById('toggle').addEventListener('click', function(){ setExplain(!shown); });
   document.getElementById('reset').addEventListener('click', function(){
     clearMarks();
-    questions.forEach(function(q){ q.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('sel'); }); });
+    questions.forEach(function(q){
+      q.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('sel'); });
+      q.querySelectorAll('.js-input').forEach(function(i){ i.value=''; });
+    });
     setExplain(false);
     document.getElementById('banner').hidden = true;
   });
