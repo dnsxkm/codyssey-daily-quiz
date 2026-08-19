@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>과제1 도커 퀴즈 — 이미지 · Dockerfile · 포트 · 마운트</title>
+<style>
+  :root{
+    --page-bg:#eceef5; --card:#ffffff; --ink:#1f2430; --sub:#5b6472;
+    --accent:#2496ed; --accent-dark:#1769aa;
+    --code-bg:#1b1e2b; --code-ink:#e6e9f0; --code-cmt:#6b7488; --code-str:#9ece6a;
+    --ok:#16a34a; --ok-bg:rgba(22,163,74,.16);
+    --bad:#dc2626; --bad-bg:rgba(220,38,38,.16);
+    --blank-border:#5b6479; --blank-bg:rgba(148,163,184,.16);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--page-bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",Roboto,sans-serif;
+    padding:24px 14px;}
+  .card{max-width:720px; margin:0 auto; background:var(--card);
+    border-radius:18px; padding:26px 22px; box-shadow:0 8px 30px rgba(20,25,45,.08);}
+  .eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.5px; font-weight:700; color:var(--accent-dark); letter-spacing:.4px;}
+  h1{font-size:22px; font-weight:800; margin:8px 0 6px; line-height:1.3;}
+  .intro{font-size:14.5px; line-height:1.7; color:var(--sub); margin:0 0 6px;}
+  .intro b{color:var(--ink);}
+  .toc{background:#eaf5fd; border:1px solid #cfe6f8; border-radius:12px; padding:13px 16px; margin:14px 0 0;}
+  .toc-h{font-size:13.5px; font-weight:800; color:var(--ink); margin-bottom:6px;}
+  .toc ol{margin:0; padding-left:20px; font-size:13.5px; line-height:1.8; color:var(--sub);}
+  .toc code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--ink);}
+  .part{margin-top:28px; margin-bottom:2px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.5px; font-weight:800; color:var(--accent-dark); letter-spacing:.4px;}
+  .part-sub{font-size:13px; color:var(--sub); margin:2px 0 0; line-height:1.6;}
+  .code{background:var(--code-bg); border-radius:12px; padding:14px 14px; overflow-x:auto;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; margin-top:4px;}
+  .ln{white-space:pre; line-height:25px; color:var(--code-ink);}
+  .cmt{color:var(--code-cmt); font-style:italic;}
+  .str{color:var(--code-str);}
+  .kw{color:#c4b5fd;}
+  .blank{width:12ch; font-family:inherit; font-size:inherit; color:var(--code-ink);
+    background:var(--blank-bg); border:1.5px solid var(--blank-border); border-radius:6px;
+    padding:0 6px; margin:0 2px; text-align:center;}
+  .blank::placeholder{color:#6b7488;}
+  .blank:focus{outline:none; border-color:#7dc4f5; box-shadow:0 0 0 2px rgba(36,150,237,.30);}
+  .blank.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .blank.bad{border-color:var(--bad); background:var(--bad-bg);}
+  .q{border:1px solid #e7e9f0; border-radius:14px; padding:16px; margin-top:12px; background:#fff;}
+  .q.ok{border-color:#bbf7d0; background:#f6fef9;}
+  .q.bad{border-color:#fecaca; background:#fffafa;}
+  .q-head{display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:800; color:var(--ink); margin-bottom:8px;}
+  .tag{font-size:11.5px; font-weight:700; color:var(--accent-dark); background:#eaf5fd; padding:2px 9px; border-radius:999px;}
+  .badge{margin-left:auto; font-size:13px; font-weight:800;}
+  .badge.ok{color:var(--ok);} .badge.bad{color:var(--bad);}
+  .q-prompt{font-size:14px; line-height:1.65; color:var(--ink); margin-bottom:4px;}
+  .q-prompt code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+  .choices{display:flex; flex-direction:column; gap:8px; margin-top:10px;}
+  .opt{text-align:left; font-size:14px; padding:10px 12px; border:1.5px solid #d7dbe6; border-radius:10px;
+    background:#fff; cursor:pointer; color:var(--ink); font-family:inherit;}
+  .opt:hover{border-color:#b9c0d4;}
+  .opt.sel{border-color:var(--accent); background:#eaf5fd;}
+  .opt.ok{border-color:var(--ok); background:var(--ok-bg);}
+  .opt.bad{border-color:var(--bad); background:var(--bad-bg);}
+  .opt:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .opt code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+  .explain{margin-top:12px; padding:12px 14px; background:#eaf5fd; border:1px solid #cfe6f8; border-radius:10px;
+    font-size:13.5px; line-height:1.7; color:var(--sub);}
+  .explain b{color:var(--ink);}
+  .explain .a{font-weight:800; color:var(--accent-dark);}
+  .explain code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:var(--ink);}
+  .btns{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:20px;}
+  .btn{font-size:15px; border-radius:10px; cursor:pointer; padding:11px 20px;}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .btn.primary{background:var(--accent); color:#fff; border:none; font-weight:700;}
+  .btn.secondary{background:#eceef5; color:var(--ink); border:1px solid #d7dbe6; font-weight:600;}
+  .btn.link{background:transparent; color:var(--accent-dark); border:none; font-weight:600; padding:11px 6px; text-decoration:underline;}
+  .banner{margin-top:16px; padding:12px 16px; border-radius:10px; font-size:14.5px; font-weight:600;}
+  .banner.ok{background:#dcfce7; color:#166534;}
+  .banner.amber{background:#fef3c7; color:#b45309;}
+  .score{margin-top:12px; display:none; flex-wrap:wrap; gap:8px;}
+  .score.show{display:flex;}
+  .sc{font-size:12.5px; font-weight:700; padding:6px 12px; border-radius:999px;}
+  .foot{margin-top:18px; font-size:12.5px; color:var(--code-cmt); text-align:center;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="eyebrow"># 과제1 · 도커 데일리 퀴즈</div>
+    <h1>🐳 Docker 개념 정리</h1>
+    <p class="intro">개발 환경 구축 과제에서 다뤘던 내용이에요. 이미지와 컨테이너의 차이부터 Dockerfile, 포트 매핑, 마운트, 그리고 <b>실제로 자주 터지는 오류</b>까지. 평가 때 나올 만한 것 위주로 <b>17문제</b> 담았습니다.</p>
+
+    <div class="toc">
+      <div class="toc-h">🐳 다루는 주제</div>
+      <ol>
+        <li>이미지 vs 컨테이너</li>
+        <li>Dockerfile — 나만의 이미지 만들기</li>
+        <li>포트 매핑 — 밖에서 접속하기</li>
+        <li>바인드 마운트 vs 볼륨</li>
+        <li>기본 명령어</li>
+        <li>트러블슈팅 — 실제로 겪는 오류들</li>
+      </ol>
+    </div>
+
+    <div class="part">▚ 주제 1 · 이미지 vs 컨테이너</div>
+    <p class="part-sub">붕어빵 틀과 붕어빵.</p>
+
+    <!-- 1 -->
+    <div class="q" data-topic="이미지/컨테이너">
+      <div class="q-head">문제 1 <span class="tag">핵심 개념</span><span class="badge"></span></div>
+      <div class="q-prompt"><b>이미지</b>와 <b>컨테이너</b>의 관계로 옳은 것은?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">컨테이너로 이미지를 만든다</button>
+        <button class="opt" data-correct="true">이미지는 읽기 전용 틀이고, 컨테이너는 그 틀로 실행된 실체다</button>
+        <button class="opt" data-correct="false">둘은 같은 말이다</button>
+        <button class="opt" data-correct="false">이미지 하나로 컨테이너는 하나만 만들 수 있다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> <b>붕어빵 틀(이미지)과 붕어빵(컨테이너)</b>으로 생각하면 쉬워요. 틀 하나로 붕어빵을 여러 개 찍듯, <b>같은 이미지로 컨테이너를 여러 개</b> 띄울 수 있습니다. 또 하나 중요한 차이 — 이미지는 <b>읽기 전용</b>이라 컨테이너 안에서 파일을 고쳐도 <b>이미지는 안 바뀌어요</b>. 그 컨테이너를 지우면 변경사항도 함께 사라집니다.</div>
+    </div>
+
+    <!-- 2 -->
+    <div class="q" data-topic="이미지/컨테이너">
+      <div class="q-head">문제 2 <span class="tag">변경의 관점</span><span class="badge"></span></div>
+      <div class="q-prompt">컨테이너 안에서 파일을 수정한 뒤 그 컨테이너를 삭제하면?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">이미지에 반영되어 다음 컨테이너에도 남는다</button>
+        <button class="opt" data-correct="true">수정 내용이 사라진다 — 새로 띄우면 원래 이미지 상태로 돌아간다</button>
+        <button class="opt" data-correct="false">자동으로 백업된다</button>
+        <button class="opt" data-correct="false">삭제 자체가 불가능하다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> 컨테이너의 변경사항은 <b>그 컨테이너에만</b> 얹혀 있어요. 삭제하면 같이 없어지고, 이미지로 새로 띄우면 <b>깨끗한 원본 상태</b>입니다. 그래서 데이터를 남기려면 <b>볼륨</b>을 쓰고, 환경 자체를 바꾸려면 <b>Dockerfile을 고쳐 이미지를 다시 빌드</b>해야 해요. 이게 "재현 가능한 환경"의 핵심 원리입니다.</div>
+    </div>
+
+    <div class="part">▚ 주제 2 · Dockerfile</div>
+    <p class="part-sub">나만의 이미지를 만드는 설계도.</p>
+
+    <!-- 3 -->
+    <div class="q" data-topic="Dockerfile">
+      <div class="q-head">문제 3 <span class="tag">빈칸</span><span class="badge"></span></div>
+      <div class="q-prompt">nginx 기반 웹서버 이미지를 만드는 Dockerfile이에요. 빈칸 3곳을 채우세요.</div>
+      <div class="code">
+<div class="ln"><input class="blank js-input" data-answer="FROM" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸1"> nginx:alpine          <span class="cmt"># 베이스 이미지</span></div>
+<div class="ln"><input class="blank js-input" data-answer="COPY" placeholder="____" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸2"> index.html /usr/share/nginx/html/</div>
+<div class="ln"><input class="blank js-input" data-answer="EXPOSE" placeholder="______" autocapitalize="none" autocorrect="off" autocomplete="off" spellcheck="false" aria-label="빈칸3"> 80             <span class="cmt"># 사용할 포트 명시</span></div>
+      </div>
+      <div class="explain" hidden><span class="a">정답: FROM, COPY, EXPOSE.</span> <code>FROM</code>은 <b>바닥부터 만들지 않고</b> 기존 이미지 위에서 시작한다는 뜻이에요(nginx가 이미 깔린 상태). <code>COPY</code>는 <b>내 컴퓨터의 파일을 이미지 안으로</b> 복사합니다. <code>EXPOSE</code>는 "이 컨테이너는 80번 포트를 씁니다"라는 <b>문서화·안내</b>예요 — 실제 연결은 실행할 때 <code>-p</code>로 합니다.</div>
+    </div>
+
+    <!-- 4 -->
+    <div class="q" data-topic="Dockerfile">
+      <div class="q-head">문제 4 <span class="tag">빌드</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>docker build -t my-web .</code> 에서 마지막 <code>.</code> 의 의미는?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">명령어 끝을 알리는 마침표</button>
+        <button class="opt" data-correct="true">빌드에 사용할 파일들이 있는 위치(현재 디렉토리)</button>
+        <button class="opt" data-correct="false">숨김 파일을 포함하라는 뜻</button>
+        <button class="opt" data-correct="false">이미지 이름의 일부</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번 — 빌드 컨텍스트.</span> 도커에게 <b>"이 폴더를 기준으로 Dockerfile과 복사할 파일들을 찾아라"</b>라고 알려주는 거예요. 그래서 <b>엉뚱한 디렉토리에서 실행하면</b> Dockerfile을 못 찾거나 COPY할 파일이 없다고 실패합니다. <code>-t my-web</code>은 만들어질 이미지에 <b>이름표(태그)</b>를 붙이는 옵션이에요.</div>
+    </div>
+
+    <!-- 5 -->
+    <div class="q" data-topic="Dockerfile">
+      <div class="q-head">문제 5 <span class="tag">수정 반영</span><span class="badge"></span></div>
+      <div class="q-prompt">Dockerfile로 만든 이미지에서 <code>index.html</code> 내용을 바꾸고 싶어요. (마운트를 쓰지 않는 경우) 어떻게 해야 반영될까요?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">파일만 고치면 실행 중인 컨테이너에 자동 반영된다</button>
+        <button class="opt" data-correct="true">파일을 고친 뒤 이미지를 다시 빌드하고 컨테이너를 새로 띄운다</button>
+        <button class="opt" data-correct="false">컨테이너를 재시작하면 된다</button>
+        <button class="opt" data-correct="false">Dockerfile을 지웠다 다시 만든다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> <code>COPY</code>는 <b>빌드하는 그 순간에 파일을 이미지 안으로 복사</b>해 넣는 거라, 이후 원본을 고쳐도 이미지 안의 사본은 그대로예요. 그래서 <code>docker build</code>를 다시 해야 합니다. <b>바로 이 불편함 때문에</b> 개발 중에는 다음 주제인 <b>바인드 마운트</b>를 쓰는 거예요 — 빌드 없이 즉시 반영되거든요.</div>
+    </div>
+
+    <div class="part">▚ 주제 3 · 포트 매핑</div>
+    <p class="part-sub">컨테이너 안의 서버에 밖에서 접속하기.</p>
+
+    <!-- 6 -->
+    <div class="q" data-topic="포트">
+      <div class="q-head">문제 6 <span class="tag">방향</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>docker run -p 8080:80 my-web</code> 에서 <b>8080</b>과 <b>80</b>은 각각 어디의 포트일까요?</div>
+      <div class="choices">
+        <button class="opt" data-correct="true">8080은 내 컴퓨터(호스트), 80은 컨테이너 안</button>
+        <button class="opt" data-correct="false">8080은 컨테이너 안, 80은 내 컴퓨터</button>
+        <button class="opt" data-correct="false">둘 다 컨테이너 안의 포트</button>
+        <button class="opt" data-correct="false">둘 다 내 컴퓨터의 포트</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 1번 — <code>-p 호스트:컨테이너</code> 순서.</span> <b>왼쪽이 바깥(내 컴퓨터), 오른쪽이 안(컨테이너)</b>이에요. 그래서 브라우저에서 <code>localhost:8080</code>으로 들어가면 컨테이너의 80번 포트로 연결됩니다. <b>잠긴 방(컨테이너)에 복도(호스트)에서 들어가는 문을 뚫는 것</b>으로 생각하면 쉬워요. 순서를 바꿔 쓰면 접속이 안 되니 주의.</div>
+    </div>
+
+    <!-- 7 -->
+    <div class="q" data-topic="포트">
+      <div class="q-head">문제 7 <span class="tag">증거</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>docker ps</code> 출력에 <code>0.0.0.0:8080-&gt;80/tcp</code> 라고 나왔어요. 무슨 뜻일까요?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">포트 연결에 실패했다는 뜻</button>
+        <button class="opt" data-correct="true">호스트 8080이 컨테이너 80으로 연결되어 있다는 뜻</button>
+        <button class="opt" data-correct="false">컨테이너 IP 주소가 0.0.0.0이라는 뜻</button>
+        <button class="opt" data-correct="false">8080번 포트가 이미 사용 중이라는 경고</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> 화살표가 <b>매핑 방향</b>을 보여줘요 — 호스트 8080 → 컨테이너 80. 앞의 <code>0.0.0.0</code>은 "어느 주소로 들어와도 받는다"는 의미입니다. 평가에서 <b>포트 매핑이 실제로 성립했다는 증거</b>로 이 출력을 보여주면 좋아요.</div>
+    </div>
+
+    <!-- 8 -->
+    <div class="q" data-topic="포트">
+      <div class="q-head">문제 8 <span class="tag">충돌</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>-p 8080:80</code> 으로 띄우려는데 <b>8080이 이미 사용 중</b>이라 실패했어요. 가장 간단한 해결책은?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">컨테이너 쪽 포트를 81로 바꾼다 (<code>-p 8080:81</code>)</button>
+        <button class="opt" data-correct="true">호스트 쪽 포트를 바꾼다 (<code>-p 8081:80</code>)</button>
+        <button class="opt" data-correct="false">도커를 재설치한다</button>
+        <button class="opt" data-correct="false">Dockerfile의 EXPOSE를 8081로 바꾼다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> 충돌은 <b>내 컴퓨터(호스트) 쪽</b>에서 나는 거라 왼쪽 숫자만 비켜주면 돼요. 그럼 <code>localhost:8081</code>로 접속합니다. <b>컨테이너 쪽(오른쪽 80)은 건드리면 안 돼요</b> — nginx가 실제로 80에서 듣고 있는데 81로 바꾸면 아무도 없는 방에 문을 뚫는 셈이라 연결이 안 됩니다. <code>EXPOSE</code>를 고치는 것도 실제 연결과 무관하고요.</div>
+    </div>
+
+    <div class="part">▚ 주제 4 · 바인드 마운트 vs 볼륨</div>
+    <p class="part-sub">둘 다 파일을 연결하지만 목적이 다르다.</p>
+
+    <!-- 9 -->
+    <div class="q" data-topic="마운트/볼륨">
+      <div class="q-head">문제 9 <span class="tag">바인드 마운트</span><span class="badge"></span></div>
+      <div class="q-prompt">바인드 마운트로 띄운 뒤 내 폴더의 <code>index.html</code>을 수정했어요. 브라우저를 새로고침하면?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">다시 빌드해야 반영된다</button>
+        <button class="opt" data-correct="true">빌드 없이 바로 반영된다</button>
+        <button class="opt" data-correct="false">컨테이너를 재시작해야 반영된다</button>
+        <button class="opt" data-correct="false">반영되지 않는다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번 — 즉시 반영.</span> 바인드 마운트는 <b>내 폴더를 컨테이너 안에 실시간으로 연결</b>하는 거예요. 파일을 복사한 게 아니라 <b>같은 파일을 함께 보는</b> 상태라, 고치면 그대로 보입니다. "빌드 안 했는데 반영됨"이 바로 바인드 마운트의 증거예요. 개발 중 코드를 자주 고칠 때 유용합니다.</div>
+    </div>
+
+    <!-- 10 -->
+    <div class="q" data-topic="마운트/볼륨">
+      <div class="q-head">문제 10 <span class="tag">볼륨</span><span class="badge"></span></div>
+      <div class="q-prompt">볼륨에 데이터를 저장하고 <b>컨테이너를 삭제</b>한 뒤, 새 컨테이너에 같은 볼륨을 연결하면?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">데이터가 사라져 있다</button>
+        <button class="opt" data-correct="true">데이터가 그대로 남아 있다</button>
+        <button class="opt" data-correct="false">에러가 난다</button>
+        <button class="opt" data-correct="false">볼륨도 함께 삭제된다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번 — 영속성.</span> 볼륨은 <b>컨테이너와 별개로</b> 도커가 관리하는 저장 공간이라, 컨테이너를 지워도 살아남아요. 이게 <b>영속성(persistence)</b>이고, 데이터베이스처럼 <b>사라지면 안 되는 데이터</b>를 다룰 때 필수입니다. "컨테이너 삭제 후에도 데이터가 읽힌다"는 게 평가에서 보여줄 증거예요.</div>
+    </div>
+
+    <!-- 11 -->
+    <div class="q" data-topic="마운트/볼륨">
+      <div class="q-head">문제 11 <span class="tag">차이</span><span class="badge"></span></div>
+      <div class="q-prompt">바인드 마운트와 볼륨의 가장 큰 차이는?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">볼륨이 더 빠르다</button>
+        <button class="opt" data-correct="true">바인드 마운트는 내가 지정한 내 폴더를 연결하고, 볼륨은 도커가 알아서 관리하는 공간을 쓴다</button>
+        <button class="opt" data-correct="false">바인드 마운트는 읽기만 가능하다</button>
+        <button class="opt" data-correct="false">볼륨은 컨테이너를 지우면 같이 사라진다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> 용도로 구분하면 쉬워요 — <b>바인드 마운트</b>는 내 소스코드를 연결해 <b>개발 중 즉시 반영</b>받는 용도, <b>볼륨</b>은 DB 데이터처럼 <b>안전하게 오래 보관</b>하는 용도. 바인드 마운트는 내 폴더 구조에 의존해서 다른 컴퓨터에선 경로가 달라질 수 있지만, 볼륨은 도커가 관리해 그런 문제가 없습니다.</div>
+    </div>
+
+    <div class="part">▚ 주제 5 · 기본 명령어</div>
+    <p class="part-sub">상태 확인하고 안으로 들어가기.</p>
+
+    <!-- 12 -->
+    <div class="q" data-topic="명령어">
+      <div class="q-head">문제 12 <span class="tag">ps</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>docker ps</code> 와 <code>docker ps -a</code> 의 차이는?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">ps는 이미지 목록, ps -a는 컨테이너 목록</button>
+        <button class="opt" data-correct="true">ps는 실행 중인 것만, ps -a는 멈춘 것까지 전부</button>
+        <button class="opt" data-correct="false">ps -a는 관리자 권한으로 보는 것</button>
+        <button class="opt" data-correct="false">차이가 없다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> <code>-a</code>는 all이에요. 컨테이너를 띄웠다 멈췄는데 <code>docker ps</code>에 안 보인다면 <b>사라진 게 아니라 멈춰 있는 것</b>이라, <code>-a</code>로 봐야 나옵니다. 그리고 멈춘 컨테이너도 <b>이름을 계속 차지</b>하고 있어서, 같은 이름으로 새로 띄우려 하면 충돌이 나요(문제 16 참고).</div>
+    </div>
+
+    <!-- 13 -->
+    <div class="q" data-topic="명령어">
+      <div class="q-head">문제 13 <span class="tag">exec vs attach</span><span class="badge"></span></div>
+      <div class="q-prompt">실행 중인 컨테이너 안에서 <b>새 셸을 열어</b> 작업하려면?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false"><code>docker attach 컨테이너명</code></button>
+        <button class="opt" data-correct="true"><code>docker exec -it 컨테이너명 bash</code></button>
+        <button class="opt" data-correct="false"><code>docker run -it 컨테이너명 bash</code></button>
+        <button class="opt" data-correct="false"><code>docker logs -it 컨테이너명</code></button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: exec.</span> <code>exec</code>는 <b>새 프로세스(셸)를 추가로</b> 실행해서 들어가는 거라, 나올 때 <code>exit</code>해도 <b>컨테이너는 계속 돌아가요</b>. 반면 <code>attach</code>는 <b>이미 돌고 있는 메인 프로세스에 붙는</b> 것이라 거기서 나가면 컨테이너가 멈출 수 있습니다. <code>-it</code>는 키보드 입력이 되는 대화형 터미널을 붙이는 옵션이에요. 참고로 <code>run</code>은 <b>새 컨테이너를 만드는</b> 명령이라 상황이 다릅니다.</div>
+    </div>
+
+    <!-- 14 -->
+    <div class="q" data-topic="명령어">
+      <div class="q-head">문제 14 <span class="tag">로그</span><span class="badge"></span></div>
+      <div class="q-prompt">컨테이너가 자꾸 꺼져요. <b>왜 죽었는지</b> 확인하려면?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false"><code>docker stats</code></button>
+        <button class="opt" data-correct="true"><code>docker logs 컨테이너명</code></button>
+        <button class="opt" data-correct="false"><code>docker images</code></button>
+        <button class="opt" data-correct="false"><code>docker info</code></button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: docker logs.</span> 컨테이너가 <b>화면에 출력한 내용</b>을 모아 보여주는 명령이라, 에러 메시지가 여기 남아요. 멈춘 컨테이너의 로그도 볼 수 있습니다. 다른 것들과 구분하면 — <code>stats</code>는 CPU·메모리 <b>실시간 사용량</b>, <code>images</code>는 <b>이미지 목록</b>, <code>info</code>는 도커 <b>전체 환경 정보</b>예요.</div>
+    </div>
+
+    <div class="part">▚ 주제 6 · 트러블슈팅</div>
+    <p class="part-sub">실제로 자주 터지는 오류들.</p>
+
+    <!-- 15 -->
+    <div class="q" data-topic="트러블슈팅">
+      <div class="q-head">문제 15 <span class="tag">이름 충돌</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>docker: Error response from daemon: Conflict. The container name "/web" is already in use</code> — 해결책은?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">도커를 재시작한다</button>
+        <button class="opt" data-correct="true">기존 컨테이너를 <code>docker rm web</code>으로 지우거나, 다른 이름으로 띄운다</button>
+        <button class="opt" data-correct="false">이미지를 다시 빌드한다</button>
+        <button class="opt" data-correct="false">포트를 바꾼다</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> 컨테이너 이름은 <b>중복될 수 없어요</b>. 그리고 <b>멈춘 컨테이너도 이름을 계속 차지</b>합니다 — <code>docker ps</code>엔 안 보이지만 <code>docker ps -a</code>엔 있죠. 그래서 <code>docker rm web</code>으로 지우고 다시 띄우거나, <code>--name web2</code>로 다른 이름을 주면 됩니다. 실행 중이라면 <code>docker stop web</code> 먼저 하고요.</div>
+    </div>
+
+    <!-- 16 -->
+    <div class="q" data-topic="트러블슈팅">
+      <div class="q-head">문제 16 <span class="tag">데몬 연결</span><span class="badge"></span></div>
+      <div class="q-prompt"><code>Cannot connect to the Docker daemon</code> 오류가 났어요. 가장 먼저 확인할 것은?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false">Dockerfile 문법</button>
+        <button class="opt" data-correct="true">도커 실행 프로그램(OrbStack 등)이 켜져 있는지</button>
+        <button class="opt" data-correct="false">인터넷 연결</button>
+        <button class="opt" data-correct="false">이미지 이름 철자</button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> <b>데몬</b>은 실제로 컨테이너를 굴리는 <b>백그라운드 엔진</b>이에요. 터미널의 <code>docker</code> 명령은 그 엔진에 <b>요청을 보내는 창구</b>일 뿐이라, 엔진이 꺼져 있으면 아무것도 안 됩니다. <code>docker --version</code>은 창구만 확인하는 거라 <b>엔진이 꺼져 있어도 잘 나와요</b> — 그래서 헷갈리기 쉽습니다. 엔진까지 확인하려면 <code>docker info</code>를 쓰세요.</div>
+    </div>
+
+    <!-- 17 -->
+    <div class="q" data-topic="트러블슈팅">
+      <div class="q-head">문제 17 <span class="tag">-v 문법</span><span class="badge"></span></div>
+      <div class="q-prompt">바인드 마운트 옵션 중 <b>올바른</b> 형식은?</div>
+      <div class="choices">
+        <button class="opt" data-correct="false"><code>-v $(pwd)/app</code></button>
+        <button class="opt" data-correct="true"><code>-v $(pwd)/app:/usr/share/nginx/html</code></button>
+        <button class="opt" data-correct="false"><code>-v $(pwd)/app /usr/share/nginx/html</code></button>
+        <button class="opt" data-correct="false"><code>-v /usr/share/nginx/html</code></button>
+      </div>
+      <div class="explain" hidden><span class="a">정답: 2번.</span> <code>-v</code>는 <b>콜론(<code>:</code>)으로 양쪽을 잇는</b> 형식이에요 — <code>-v 내폴더:컨테이너안폴더</code>. 포트 매핑 <code>-p 8080:80</code>과 <b>똑같은 구조</b>라 함께 외우면 좋습니다. 콜론을 빠뜨리거나 공백으로 띄우면 도커가 이름 있는 볼륨으로 오해하거나 오류를 냅니다. <code>$(pwd)</code>는 <b>현재 폴더의 절대경로</b>를 넣어주는 것으로, 상대경로는 안 되기 때문에 씁니다.</div>
+    </div>
+
+    <div class="btns">
+      <button id="grade" class="btn primary">채점하기</button>
+      <button id="reset" class="btn secondary">다시 풀기</button>
+      <button id="toggle" class="btn link">정답·해설 보기</button>
+    </div>
+    <div id="banner" class="banner" hidden></div>
+    <div id="score" class="score"></div>
+    <div class="foot">주제별 점수가 함께 표시돼요. 빈칸은 대소문자·공백 무관.</div>
+  </div>
+
+<script>
+  var questions = Array.prototype.slice.call(document.querySelectorAll('.q'));
+  var shown = false;
+  function norm(s){ return (s||'').replace(/\s+/g,'').toLowerCase(); }
+  function matches(inp){
+    var v = norm(inp.value);
+    return (inp.dataset.answer||'').split('|').some(function(a){ return norm(a)===v; });
+  }
+  questions.forEach(function(q){
+    var group = q.querySelector('.choices');
+    if(!group) return;
+    group.querySelectorAll('.opt').forEach(function(opt){
+      opt.addEventListener('click', function(){
+        group.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('sel','ok','bad'); });
+        opt.classList.add('sel');
+        q.classList.remove('ok','bad');
+        var b=q.querySelector('.badge'); if(b){ b.textContent=''; b.className='badge'; }
+      });
+    });
+  });
+  function isCorrect(q){
+    var group = q.querySelector('.choices');
+    if(group){
+      var sel = group.querySelector('.opt.sel');
+      return !!sel && sel.dataset.correct === 'true';
+    }
+    var ins = Array.prototype.slice.call(q.querySelectorAll('.js-input'));
+    return ins.length > 0 && ins.every(matches);
+  }
+  function setExplain(on){
+    shown = on;
+    questions.forEach(function(q){ var ex=q.querySelector('.explain'); if(ex) ex.hidden=!on; });
+    document.getElementById('toggle').textContent = on ? '정답·해설 숨기기' : '정답·해설 보기';
+  }
+  function clearMarks(){
+    questions.forEach(function(q){
+      q.classList.remove('ok','bad');
+      var b=q.querySelector('.badge'); if(b){ b.textContent=''; b.className='badge'; }
+      q.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('ok','bad'); });
+      q.querySelectorAll('.js-input').forEach(function(i){ i.classList.remove('ok','bad'); });
+    });
+    document.getElementById('score').classList.remove('show');
+  }
+  document.getElementById('grade').addEventListener('click', function(){
+    clearMarks();
+    var correct = 0, byTopic = {};
+    questions.forEach(function(q){
+      var t = q.dataset.topic || '기타';
+      if(!byTopic[t]) byTopic[t] = {c:0, n:0};
+      byTopic[t].n++;
+      var ok = isCorrect(q);
+      if(ok){ correct++; byTopic[t].c++; }
+      q.classList.add(ok ? 'ok' : 'bad');
+      var badge = q.querySelector('.badge');
+      if(badge){ badge.textContent = ok ? '✓ 정답' : '✗ 다시'; badge.className='badge '+(ok?'ok':'bad'); }
+      q.querySelectorAll('.opt').forEach(function(opt){
+        if(opt.dataset.correct === 'true') opt.classList.add('ok');
+        else if(opt.classList.contains('sel')) opt.classList.add('bad');
+      });
+      q.querySelectorAll('.js-input').forEach(function(i){ i.classList.add(matches(i)?'ok':'bad'); });
+    });
+    setExplain(true);
+    var b = document.getElementById('banner');
+    b.hidden = false;
+    if(correct === questions.length){
+      b.className='banner ok';
+      b.textContent='🎉 '+questions.length+'문제 모두 정답! 평가 준비 완료네요.';
+    } else {
+      b.className='banner amber';
+      b.textContent=questions.length+'문제 중 '+correct+'개 정답 — 아래 주제별 점수에서 약한 곳을 확인해보세요.';
+    }
+    var sc = document.getElementById('score');
+    sc.innerHTML='';
+    Object.keys(byTopic).forEach(function(t){
+      var v=byTopic[t];
+      var el=document.createElement('span');
+      el.className='sc';
+      el.textContent=t+' '+v.c+'/'+v.n;
+      el.style.background=(v.c===v.n)?'#dcfce7':'#fef3c7';
+      el.style.color=(v.c===v.n)?'#166534':'#b45309';
+      sc.appendChild(el);
+    });
+    sc.classList.add('show');
+  });
+  document.getElementById('toggle').addEventListener('click', function(){ setExplain(!shown); });
+  document.getElementById('reset').addEventListener('click', function(){
+    clearMarks();
+    questions.forEach(function(q){
+      q.querySelectorAll('.opt').forEach(function(o){ o.classList.remove('sel'); });
+      q.querySelectorAll('.js-input').forEach(function(i){ i.value=''; });
+    });
+    setExplain(false);
+    document.getElementById('banner').hidden = true;
+  });
+</script>
+</body>
+</html>
