@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>파이썬 문제 — 장바구니 총액 (브론즈)</title>
+<style>
+  :root{
+    --page-bg:#eceef5; --card:#ffffff; --ink:#1f2430; --sub:#5b6472;
+    --accent:#4f46e5; --accent-dark:#4338ca;
+    --code-bg:#1b1e2b; --code-ink:#e6e9f0; --code-cmt:#6b7488; --code-str:#9ece6a;
+    --ok:#16a34a; --ok-bg:#dcfce7;
+    --bad:#dc2626; --bad-bg:#fee2e2;
+    --warn:#b45309; --warn-bg:#fef3c7;
+    --line:#e7e9f0;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--page-bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",Roboto,sans-serif;
+    padding:24px 14px;}
+  .card{max-width:760px; margin:0 auto; background:var(--card);
+    border-radius:18px; padding:26px 22px; box-shadow:0 8px 30px rgba(20,25,45,.08);}
+  .top{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .rank{font-size:12px; font-weight:800; color:var(--warn); background:var(--warn-bg);
+    padding:4px 12px; border-radius:999px;}
+  .eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12.5px; font-weight:700; color:var(--accent); letter-spacing:.4px;}
+  h1{font-size:24px; font-weight:800; margin:12px 0 6px; line-height:1.3;}
+  .meta{font-size:12.5px; color:var(--code-cmt); font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    padding-bottom:16px; border-bottom:1px solid var(--line);}
+  h2{font-size:16px; font-weight:800; margin:26px 0 8px; padding-left:11px;
+    border-left:4px solid var(--accent); line-height:1.2;}
+  p{font-size:14.5px; line-height:1.75; color:var(--ink); margin:0 0 10px;}
+  p.sub{color:var(--sub);}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    background:#eef1f8; padding:2px 6px; border-radius:5px; font-size:13.5px;}
+  .io{display:flex; gap:12px; flex-wrap:wrap; margin-top:6px;}
+  .io > div{flex:1; min-width:220px;}
+  .io-h{font-size:12.5px; font-weight:800; color:var(--sub); margin-bottom:6px;}
+  pre{background:var(--code-bg); color:var(--code-ink); border-radius:12px; padding:14px 16px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13.5px;
+    line-height:1.7; margin:0; overflow-x:auto; white-space:pre;}
+
+  details{margin-top:12px; border:1px solid var(--line); border-radius:12px; background:#fbfbfd;}
+  details[open]{background:#fff;}
+  summary{cursor:pointer; padding:13px 16px; font-size:14.5px; font-weight:700; color:var(--accent);
+    list-style:none; user-select:none;}
+  summary::-webkit-details-marker{display:none;}
+  summary::before{content:"▸ "; font-size:12px;}
+  details[open] summary::before{content:"▾ ";}
+  .dbody{padding:0 16px 16px; font-size:14px; line-height:1.75; color:var(--sub);}
+  .dbody b{color:var(--ink);}
+  .dbody pre{margin-top:10px;}
+  .step{margin-top:10px;}
+
+  /* ── 에디터 ── */
+  .ed-wrap{margin-top:10px; border:1.5px solid #3a4058; border-radius:12px; overflow:hidden;
+    background:var(--code-bg);}
+  .ed-bar{display:flex; align-items:center; gap:8px; padding:8px 14px; background:#14161f;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12px; color:var(--code-cmt);}
+  .ed-bar .dot{width:10px; height:10px; border-radius:50%;}
+  .ed-body{display:flex;}
+  .gutter{padding:14px 0 14px 14px; background:var(--code-bg); color:#4d5570; text-align:right;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13.5px; line-height:1.7;
+    user-select:none; min-width:44px; white-space:pre;}
+  textarea#code{flex:1; background:transparent; color:var(--code-ink); border:none; outline:none;
+    padding:14px 16px 14px 10px; resize:vertical; min-height:230px; tab-size:4;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13.5px; line-height:1.7;
+    white-space:pre; overflow-x:auto;}
+  .ed-wrap:focus-within{border-color:#818cf8; box-shadow:0 0 0 2px rgba(129,140,248,.30);}
+  .ed-hint{font-size:12.5px; color:var(--code-cmt); margin-top:8px;}
+
+  .btns{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:12px;}
+  .btn{font-size:15px; border-radius:10px; cursor:pointer; padding:11px 20px; font-family:inherit;}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .btn.primary{background:var(--accent); color:#fff; border:none; font-weight:700;}
+  .btn.primary:disabled{background:#a5a9c0; cursor:not-allowed;}
+  .btn.secondary{background:#eceef5; color:var(--ink); border:1px solid #d7dbe6; font-weight:600;}
+  .status{font-size:13px; color:var(--code-cmt);}
+
+  .verdict{margin-top:14px; padding:14px 18px; border-radius:12px; font-size:16px; font-weight:800;
+    display:none;}
+  .verdict.show{display:block;}
+  .verdict.ok{background:var(--ok-bg); color:#166534;}
+  .verdict.bad{background:var(--bad-bg); color:#991b1b;}
+  .verdict.err{background:var(--warn-bg); color:var(--warn);}
+  .verdict .sub{font-size:13.5px; font-weight:600; margin-top:6px; display:block;}
+
+  table.tc{width:100%; border-collapse:collapse; margin-top:12px; font-size:13px; display:none;}
+  table.tc.show{display:table;}
+  table.tc th{background:#f4f6fa; color:var(--sub); font-weight:700; padding:8px 10px;
+    text-align:left; border-bottom:1px solid var(--line); font-size:12.5px;}
+  table.tc td{padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12.5px;
+    color:var(--ink); white-space:pre-wrap; word-break:break-all;}
+  table.tc td.v{font-weight:800; white-space:nowrap;}
+  table.tc td.v.ok{color:var(--ok);} table.tc td.v.bad{color:var(--bad);}
+  .errbox{margin-top:10px; display:none;}
+  .errbox.show{display:block;}
+  .errbox pre{background:#2b1d1f; color:#fca5a5; font-size:12.5px;}
+
+  .foot{margin-top:22px; padding-top:16px; border-top:1px solid var(--line);
+    font-size:12.5px; color:var(--code-cmt); text-align:center;}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="top">
+      <span class="rank">🥉 브론즈</span>
+      <span class="eyebrow"># 파이썬 문제 풀이</span>
+    </div>
+    <h1>장바구니 총액</h1>
+    <div class="meta">시간 제한 1초 · 메모리 128MB · 반복문 · 입력 처리</div>
+
+    <h2>문제</h2>
+    <p>온라인 쇼핑몰에서 물건을 담았습니다. 각 물건의 <b>가격</b>과 <b>수량</b>이 주어질 때, 총 결제 금액을 구하는 프로그램을 작성하세요.</p>
+
+    <h2>입력</h2>
+    <p class="sub">첫째 줄에 담은 물건의 종류 수 <code>N</code>이 주어집니다. (1 ≤ N ≤ 100)</p>
+    <p class="sub">둘째 줄부터 <code>N</code>개의 줄에 걸쳐 각 물건의 가격 <code>P</code>와 수량 <code>C</code>가 공백으로 구분되어 주어집니다. (1 ≤ P ≤ 10,000, 1 ≤ C ≤ 100)</p>
+
+    <h2>출력</h2>
+    <p class="sub">총 결제 금액을 출력합니다.</p>
+
+    <h2>예제</h2>
+    <div class="io">
+      <div>
+        <div class="io-h">예제 입력 1</div>
+        <pre>3
+1000 2
+500 3
+2000 1</pre>
+      </div>
+      <div>
+        <div class="io-h">예제 출력 1</div>
+        <pre>5500</pre>
+      </div>
+    </div>
+    <p class="sub" style="margin-top:10px; font-size:13.5px;">1000원짜리 2개(2000) + 500원짜리 3개(1500) + 2000원짜리 1개(2000) = <b>5500</b></p>
+
+    <div class="io" style="margin-top:16px;">
+      <div>
+        <div class="io-h">예제 입력 2</div>
+        <pre>1
+7 7</pre>
+      </div>
+      <div>
+        <div class="io-h">예제 출력 2</div>
+        <pre>49</pre>
+      </div>
+    </div>
+
+    <h2>제출</h2>
+    <p class="sub" style="font-size:13.5px;">코드를 작성하고 <b>제출하기</b>를 누르면 실제로 파이썬이 실행되어 채점됩니다.</p>
+
+    <div class="ed-wrap">
+      <div class="ed-bar">
+        <span class="dot" style="background:#ff5f57"></span>
+        <span class="dot" style="background:#febc2e"></span>
+        <span class="dot" style="background:#28c840"></span>
+        <span style="margin-left:6px;">solution.py</span>
+      </div>
+      <div class="ed-body">
+        <div class="gutter" id="gutter">1</div>
+        <textarea id="code" spellcheck="false" autocapitalize="none" autocorrect="off" autocomplete="off"></textarea>
+      </div>
+    </div>
+    <div class="ed-hint">Tab = 들여쓰기 4칸 · Shift+Tab = 내어쓰기 · 콜론(:) 뒤 엔터를 치면 자동으로 들여쓰기됩니다.</div>
+
+    <div class="btns">
+      <button class="btn primary" id="run" disabled>파이썬 준비 중…</button>
+      <button class="btn secondary" id="reset">초기화</button>
+      <span class="status" id="status"></span>
+    </div>
+
+    <div class="verdict" id="verdict"></div>
+    <div class="errbox" id="errbox"><pre id="errtext"></pre></div>
+    <table class="tc" id="tctable">
+      <thead><tr><th style="width:64px;">번호</th><th>입력</th><th style="width:96px;">기댓값</th><th style="width:96px;">내 출력</th><th style="width:60px;">결과</th></tr></thead>
+      <tbody id="tcbody"></tbody>
+    </table>
+
+    <h2>힌트</h2>
+    <details>
+      <summary>힌트 1 — 어떻게 시작할까?</summary>
+      <div class="dbody">
+        <div class="step">① 먼저 물건이 <b>몇 종류인지</b> 알아야 반복 횟수를 정할 수 있어요. 첫 줄을 읽어 <code>N</code>을 구합니다.</div>
+        <div class="step">② 총액을 담을 변수를 <b>0으로 시작</b>해 두고, 물건마다 더해 나갑니다.</div>
+        <div class="step">③ 각 줄에서 <b>가격 × 수량</b>을 계산해 총액에 누적하면 끝이에요.</div>
+      </div>
+    </details>
+    <details>
+      <summary>힌트 2 — 한 줄에 두 숫자가 있을 때</summary>
+      <div class="dbody">
+        <code>input()</code>은 <b>한 줄 전체를 문자열로</b> 돌려줍니다. <code>"1000 2"</code>처럼요.
+        <div class="step">공백 기준으로 나누려면 <code>.split()</code>, 나뉜 조각을 한꺼번에 숫자로 바꾸려면 <code>map(int, ...)</code>을 씁니다.</div>
+        <pre>price, count = map(int, input().split())</pre>
+      </div>
+    </details>
+    <details>
+      <summary>힌트 3 — 반복 변수를 안 쓸 때</summary>
+      <div class="dbody">
+        <code>N</code>번 반복하되 <b>지금이 몇 번째인지는 필요 없을</b> 때는 변수 이름을 <code>_</code>로 씁니다.
+        <pre>for _ in range(n):
+    ...</pre>
+        <div class="step"><code>i</code>라고 써도 동작은 같지만, <code>_</code>는 <b>"이 값은 안 쓴다"</b>는 뜻을 코드로 표현하는 관례예요.</div>
+      </div>
+    </details>
+
+    <h2>정답</h2>
+    <details>
+      <summary>정답 코드 보기</summary>
+      <div class="dbody">
+        <pre>n = int(input())
+total = 0
+
+for _ in range(n):
+    price, count = map(int, input().split())
+    total += price * count
+
+print(total)</pre>
+        <div class="step"><b>한 줄씩 살펴보면</b></div>
+        <div class="step">• <code>n = int(input())</code> — 입력은 항상 <b>문자열</b>이라 <code>int()</code>로 바꿔야 반복 횟수로 쓸 수 있어요.</div>
+        <div class="step">• <code>total = 0</code> — 누적 변수는 반드시 <b>반복문 밖에서</b> 시작합니다. 안에 두면 매번 초기화돼 마지막 값만 남아요.</div>
+        <div class="step">• <code>total += price * count</code> — 곱한 뒤 <b>쌓습니다</b>. <code>=</code>가 아니라 <code>+=</code>인 게 핵심.</div>
+        <div class="step">• <code>print(total)</code> — 반복이 <b>끝난 뒤</b> 한 번만 출력합니다.</div>
+      </div>
+    </details>
+    <details>
+      <summary>자주 하는 실수</summary>
+      <div class="dbody">
+        <div class="step">🔸 <b>total을 반복문 안에서 0으로 초기화</b> → 매번 리셋되어 마지막 값만 남습니다.</div>
+        <div class="step">🔸 <b>print를 반복문 안에 넣음</b> → 줄마다 출력되어 오답.</div>
+        <div class="step">🔸 <b><code>int()</code>를 빠뜨림</b> → <code>"1000" * 2</code>는 <code>"10001000"</code>이 됩니다.</div>
+        <div class="step">🔸 <b>들여쓰기 불일치</b> → <code>IndentationError</code>. 한 파일에서 공백 4칸으로 통일하세요.</div>
+      </div>
+    </details>
+
+    <div class="foot">브론즈 난이도 · 브라우저에서 실제 파이썬(Pyodide)으로 채점됩니다</div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js"></script>
+<script>
+(function(){
+  var TESTS = [
+    { in: "3\n1000 2\n500 3\n2000 1\n", out: "5500" },
+    { in: "1\n7 7\n",                    out: "49" },
+    { in: "1\n1 1\n",                    out: "1" },
+    { in: "5\n1 1\n2 2\n3 3\n4 4\n5 5\n", out: "55" },
+    { in: "2\n10000 100\n10000 100\n",   out: "2000000" },
+    { in: "100\n" + Array(100).fill("10000 100").join("\n") + "\n", out: "100000000" }
+  ];
+
+  var ta = document.getElementById('code');
+  var gutter = document.getElementById('gutter');
+  var runBtn = document.getElementById('run');
+  var statusEl = document.getElementById('status');
+  var verdict = document.getElementById('verdict');
+  var tctable = document.getElementById('tctable');
+  var tcbody = document.getElementById('tcbody');
+  var errbox = document.getElementById('errbox');
+  var errtext = document.getElementById('errtext');
+  var pyodide = null;
+
+  // ── 줄번호 ──
+  function updateGutter(){
+    var n = ta.value.split('\n').length;
+    var s = '';
+    for(var i=1;i<=n;i++) s += i + (i<n ? '\n' : '');
+    gutter.textContent = s;
+    gutter.scrollTop = ta.scrollTop;
+  }
+  ta.addEventListener('input', updateGutter);
+  ta.addEventListener('scroll', function(){ gutter.scrollTop = ta.scrollTop; });
+
+  // ── 들여쓰기: Tab / Shift+Tab / 자동 들여쓰기 ──
+  function setVal(v, pos){
+    ta.value = v;
+    ta.selectionStart = ta.selectionEnd = pos;
+    updateGutter();
+  }
+  ta.addEventListener('keydown', function(e){
+    var s = ta.selectionStart, en = ta.selectionEnd, v = ta.value;
+
+    if(e.key === 'Tab'){
+      e.preventDefault();
+      var lineStart = v.lastIndexOf('\n', s-1) + 1;
+      if(e.shiftKey){
+        // 내어쓰기: 줄 앞 공백 최대 4칸 제거
+        var lead = v.slice(lineStart).match(/^ {1,4}/);
+        if(lead){
+          setVal(v.slice(0,lineStart) + v.slice(lineStart+lead[0].length),
+                 Math.max(lineStart, s - lead[0].length));
+        }
+      } else if(s !== en){
+        // 블록 들여쓰기
+        var endLine = v.indexOf('\n', en); if(endLine === -1) endLine = v.length;
+        var block = v.slice(lineStart, endLine).split('\n').map(function(l){ return '    ' + l; }).join('\n');
+        ta.value = v.slice(0,lineStart) + block + v.slice(endLine);
+        ta.selectionStart = lineStart; ta.selectionEnd = lineStart + block.length;
+        updateGutter();
+      } else {
+        setVal(v.slice(0,s) + '    ' + v.slice(en), s + 4);
+      }
+      return;
+    }
+
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      var ls = v.lastIndexOf('\n', s-1) + 1;
+      var line = v.slice(ls, s);
+      var indent = (line.match(/^ */) || [''])[0];
+      if(/:\s*$/.test(line)) indent += '    ';       // 콜론 뒤 자동 들여쓰기
+      setVal(v.slice(0,s) + '\n' + indent + v.slice(en), s + 1 + indent.length);
+      return;
+    }
+
+    if(e.key === 'Backspace' && s === en){
+      var ls2 = v.lastIndexOf('\n', s-1) + 1;
+      var before = v.slice(ls2, s);
+      if(before.length >= 4 && /^ +$/.test(before) && before.length % 4 === 0){
+        e.preventDefault();
+        setVal(v.slice(0, s-4) + v.slice(s), s-4);
+      }
+    }
+  });
+
+  var STARTER = "n = int(input())\ntotal = 0\n\n";
+  ta.value = STARTER;
+  updateGutter();
+
+  document.getElementById('reset').addEventListener('click', function(){
+    ta.value = STARTER;
+    updateGutter();
+    verdict.className = 'verdict';
+    tctable.className = 'tc';
+    errbox.className = 'errbox';
+    ta.focus();
+  });
+
+  // ── Pyodide 로드 ──
+  async function boot(){
+    try{
+      statusEl.textContent = '파이썬 불러오는 중… (처음 한 번만)';
+      pyodide = await loadPyodide();
+      runBtn.disabled = false;
+      runBtn.textContent = '제출하기';
+      statusEl.textContent = '준비 완료';
+    }catch(err){
+      statusEl.textContent = '';
+      runBtn.textContent = '불러오기 실패';
+      verdict.className = 'verdict show err';
+      verdict.innerHTML = '⚠️ 파이썬을 불러오지 못했어요<span class="sub">인터넷 연결을 확인하고 새로고침해 주세요.</span>';
+    }
+  }
+  boot();
+
+  // ── 채점 ──
+  async function runOne(code, input){
+    pyodide.globals.set('_src', code);
+    pyodide.globals.set('_inp', input);
+    var wrapper = [
+      "import sys, io",
+      "_out = io.StringIO()",
+      "_old_in, _old_out = sys.stdin, sys.stdout",
+      "sys.stdin = io.StringIO(_inp)",
+      "sys.stdout = _out",
+      "_err = ''",
+      "try:",
+      "    exec(compile(_src, 'solution.py', 'exec'), {'__name__':'__main__'})",
+      "except Exception:",
+      "    import traceback",
+      "    _err = traceback.format_exc()",
+      "finally:",
+      "    sys.stdin, sys.stdout = _old_in, _old_out",
+      "_res = (_out.getvalue(), _err)"
+    ].join('\n');
+    await pyodide.runPythonAsync(wrapper);
+    var res = pyodide.globals.get('_res').toJs();
+    return { out: res[0], err: res[1] };
+  }
+
+  runBtn.addEventListener('click', async function(){
+    var code = ta.value;
+    verdict.className = 'verdict';
+    tctable.className = 'tc';
+    errbox.className = 'errbox';
+    tcbody.innerHTML = '';
+
+    if(!code.trim()){
+      verdict.className = 'verdict show err';
+      verdict.innerHTML = '코드를 작성해 주세요';
+      return;
+    }
+
+    runBtn.disabled = true;
+    runBtn.textContent = '채점 중…';
+    statusEl.textContent = '';
+
+    var passed = 0, firstErr = null, rows = '';
+    for(var i=0;i<TESTS.length;i++){
+      var t = TESTS[i];
+      var r;
+      try{
+        r = await runOne(code, t.in);
+      }catch(ex){
+        r = { out:'', err:String(ex) };
+      }
+      if(r.err && !firstErr) firstErr = r.err;
+      var got = (r.out || '').trim();
+      var ok = got === t.out;
+      if(ok) passed++;
+      var shownIn = t.in.length > 60 ? t.in.slice(0,55).trim() + ' …' : t.in.trim();
+      var shownGot = r.err ? '(에러)' : (got.length > 20 ? got.slice(0,20)+'…' : (got || '(없음)'));
+      rows += '<tr><td>' + (i+1) + '</td><td>' + shownIn + '</td><td>' + t.out +
+              '</td><td>' + shownGot + '</td><td class="v ' + (ok?'ok':'bad') + '">' +
+              (ok?'✓':'✗') + '</td></tr>';
+    }
+    tcbody.innerHTML = rows;
+    tctable.className = 'tc show';
+
+    if(firstErr){
+      verdict.className = 'verdict show err';
+      verdict.innerHTML = '⚠️ 실행 중 오류 (런타임 에러)<span class="sub">아래 메시지의 마지막 줄을 먼저 읽어보세요.</span>';
+      errtext.textContent = firstErr.trim();
+      errbox.className = 'errbox show';
+    } else if(passed === TESTS.length){
+      verdict.className = 'verdict show ok';
+      verdict.innerHTML = '🎉 맞았습니다!!<span class="sub">' + TESTS.length + '개 테스트케이스를 모두 통과했어요.</span>';
+    } else {
+      verdict.className = 'verdict show bad';
+      verdict.innerHTML = '❌ 틀렸습니다<span class="sub">' + TESTS.length + '개 중 ' + passed +
+        '개 통과 — 아래 표에서 ✗ 표시된 케이스를 확인해 보세요.</span>';
+    }
+
+    runBtn.disabled = false;
+    runBtn.textContent = '제출하기';
+  });
+})();
+</script>
+</body>
+</html>
